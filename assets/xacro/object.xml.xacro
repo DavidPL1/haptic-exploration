@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<mujoco model="generic_object" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:macro name="object_asset" params="object_model_subpath">
+        <asset>
+            <mesh name="object_collision" file="$(find haptic_exploration)/assets/meshes/ycb/${object_model_subpath}"/>
+        </asset>
+    </xacro:macro>
+
+    <xacro:macro name="object_body" params="pos rot">
+        <body name="object" pos="0 0.0 0.36" >
+            <!-- <freejoint /> -->
+            <geom type="mesh" mesh="object_collision" pos="${pos}" euler="${rot}" material="object_material" rgba="0.3 0.3 0.8 0.8" group="1" contype="2" conaffinity="1" />
+            <geom type="box" pos="0 0 0.015" size="0.05 0.05 0.015" contype="2" conaffinity="1" />
+        </body>
+    </xacro:macro>
+</mujoco>

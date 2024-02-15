@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mujoco model="exploration_mocap_simple" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:arg name="mesh_subpath" default="not set!"/>
+	<xacro:arg name="visualize_surfaces" default="0" />
+    <xacro:arg name="mesh_pos" default="0 0 0" />
+    <xacro:arg name="mesh_rot" default="0 0 0" />
+ 
+    <xacro:include filename="$(find haptic_exploration)/assets/xacro/object.xml.xacro" />
+    <xacro:include filename="$(find haptic_exploration)/assets/xacro/myrmex_mocap.xml.xacro" />
+
+	<compiler angle="radian" coordinate="local" texturedir="textures" />
+	<option timestep="0.001" cone="elliptic" jacobian="sparse" gravity="0 0 -9.81" />
+
+	<custom>
+		<!-- All custom parameters related to contact surfaces have the prefix cs:: -->
+		<text name="cs::HydroelasticContactRepresentation" data="kTriangle"/>
+		<numeric name="cs::VisualizeSurfaces" data="$(arg visualize_surfaces)"/>
+		<!-- Contact properties for each geom: hydroelasticModulus, dissipation, resolutionHint, staticFriction, dynamicFriction.
+		A rigid object has hydroelasticModulus of 0 and dissipation of 1. 
+		A soft box with a resolution hint of 0 uses a resolution automatically computed by drake. -->
+		<numeric name="cs::object_geom" data="0 1.0 0.1 0.3 0.3"/>
+		<numeric name="cs::myrmex_foam" data="1e4 7.0 0 0.3 0.3"/>
+	</custom>
+
+	<asset>
+		<texture builtin="checker" height="512" name="texplane" rgb1=".2 .3 .4" rgb2=".1 .15 .2" type="2d" width="512" />
+		<texture type="skybox" builtin="gradient" rgb1="0.8 0.898 1" rgb2="0.8 0.898 1" width="32" height="32" />
+
+		<material name="floor_material" reflectance="0.5" shininess="0.01" specular="0.1" texrepeat="1 1" texture="texplane" texuniform="true" />
+        <material name="table_material" specular="0.1" shininess="0.5" reflectance="0.5" rgba="0.73 0.73 0.73 1" />
+        <material name="object_material" specular="0" shininess="0.5" reflectance="0" rgba="0.3 0.3 0.8 0.8" />
+        <material name="glance_material" specular="0" shininess="0.5" reflectance="0" rgba="0 1 0 0.13" />
+	</asset>
+
+    <xacro:object_asset object_model_subpath="$(arg mesh_subpath)"/>
+
+    <worldbody>
+		<geom name="ground_plane" pos="0 0 0" type="plane" condim="3" size="45 45 10" material="floor_material" rgba="1 1 1 1"/>
+		<geom name="table" pos="0 0 0.18" size="0.2 0.2 0.18" type="box" material="table_material"/>
+		<site name="glance_site" pos="0 0 0.39" type="box" material="glance_material" size="0.18 0.14 0.12"/>
+		<body name="board_boundary" pos="0 0 0.36">
+			<geom type="box" pos="0.125 0 0.015" size="0.075 0.2 0.015"/>
+			<body euler="0 0 1.57079632679">
+				<geom type="box" pos="0.125 0 0.015" size="0.075 0.2 0.015"/>
+			</body>
+			<body euler="0 0 3.14159265359">
+				<geom type="box" pos="0.125 0 0.015" size="0.075 0.2 0.015"/>
+			</body>
+			<body euler="0 0 4.71238898038">
+				<geom type="box" pos="0.125 0 0.015" size="0.075 0.2 0.015"/>
+			</body>
+		</body>
+		<light directional="true" ambient="0.2 0.2 0.2" diffuse="0.8 0.8 0.8" specular="0.3 0.3 0.3" castshadow="false" pos="0 0 4" dir="0 0 -1" name="light0" />
+
+        <xacro:object_body pos="$(arg mesh_pos)" rot="$(arg mesh_rot)"/>
+	</worldbody>
+
+	<xacro:myrmex_mocap />
+</mujoco>
