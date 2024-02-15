@@ -1,0 +1,91 @@
+#!/usr/bin/env python
+
+import rospy
+from rospkg import RosPack
+import xacro
+
+import numpy as np
+import os
+import os.path as osp
+import tempfile
+import getpass
+
+from haptic_exploration import mujoco_config
+
+from mujoco_ros_msgs.srv import SetPause, SetPauseRequest, Reload, ReloadRequest
+
+def build_model(object_id):
+    object_rotation = [0, 90, 0]
+    if object_id in mujoco_config.ycb_objects_custom_rotation:
+        for dim_name, rot in mujoco_config.ycb_objects_custom_rotation[object_id].items():
+            object_rotation[["x", "y", "z"].index(dim_name)] = rot
+    mesh_rot = np.array(object_rotation) / 180 * np.pi
+
+    #TODO christopher: why addition here and not directly in mujoco_config?
+    mesh_pos = np.array(mujoco_config.ycb_objects_custom_position[object_id]) + np.array([0, 0, 0.03])
+    mesh_path = f"{mujoco_config.ycb_objects[object_id]}/google_16k/nontextured.stl"
+    show_surfaces = rospy.get_param("~show_surfaces", False)
+
+    arg_map = dict(
+        mesh_subpath=mesh_path,
+        visualize_surfaces=f'{int(show_surfaces)}',
+        mesh_pos=' '.join(map(str, mesh_pos)),
+        mesh_rot=' '.join(map(str, mesh_rot)),
+    )
+
+    outfile = osp.join(tempfile.gettempdir(), f'ycb_exploration_{getpass.getuser()}.xml')
+
+    doc = xacro.process_file(xacro_base, mappings=arg_map).toprettyxml(indent='  ')
+    with open(outfile, 'w') as f:
+        f.write(doc)
+    return outfile
+
+def set_pause(pause):
+    try:
+        rospy.wait_for_service('/mujoco_server/set_pause', 60)
+    except:
+        rospy.logerr("Could not connect to mujoco_server")
+        return False
+    resp = rospy.ServiceProxy('/mujoco_server/set_pause', SetPause)(SetPauseRequest(paused=pause))
+    return resp.success
+
+def load_model(filepath):
+    try:
+        rospy.wait_for_service('/mujoco_server/reload', 60)
+    except:
+        rospy.logerr("Could not connect to mujoco_server")
+        return False
+    set_pause(False)
+    rospy.sleep(0.2)
+    set_pause(True)
+
+    resp = rospy.ServiceProxy('/mujoco_server/reload', Reload)(ReloadRequest(model=filepath))
+    return resp.success
+
+if __name__ == '__main__':
+    rospy.init_node('ycb_recorder')
+
+    num_splits = rospy.get_param("~num_splits", 1)
+    chunk = rospy.get_param("~chunk", 0)
+    assert chunk < num_splits, "Chunk must be smaller than num_splits!"
+
+    base_ycb_dir = osp.join(RosPack().get_path('haptic_exploration'), 'assets', 'meshes', 'ycb')
+    available_objects = os.listdir(base_ycb_dir)
+    available_objects = [x for x in available_objects if osp.isdir(osp.join(base_ycb_dir, x))]
+    available_objects = [x for x in available_objects if x in mujoco_config.ycb_objects.values()]
+    rospy.loginfo(f"Available objects: {available_objects}")
+
+    available_objects = [list(mujoco_config.ycb_objects.keys())[list(mujoco_config.ycb_objects.values()).index(x)] for x in available_objects]
+    rospy.loginfo(f"Available objects: {available_objects}")
+
+    splits = np.array_split(available_objects, num_splits)
+    chosen_objects = splits[chunk]
+
+    xacro_base = osp.join(RosPack().get_path('haptic_exploration'), 'assets', 'xacro', 'generic_ycb_exploration.xml.xacro')
+    for object_id in chosen_objects:
+        filepath = build_model(object_id)
+        load_model(filepath)
+        set_pause(False)
+        
+        # Record data here
+        rospy.sleep(10)
