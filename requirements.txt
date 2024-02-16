@@ -12,3 +12,4 @@ setuptools~=68.2.2
 pandas~=1.3.5
 cloudpickle~=3.0.0
 psutil~=5.9.0
+fpstimer~=0.0.1
