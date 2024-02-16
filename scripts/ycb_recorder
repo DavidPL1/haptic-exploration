@@ -13,6 +13,7 @@ from haptic_exploration.config import ObjectSet
 from haptic_exploration.sample import sample_objects, SamplingConfig
 from haptic_exploration.util import deg2rad
 
+from std_srvs.srv import Empty, EmptyRequest
 
 if __name__ == '__main__':
 
@@ -46,3 +47,5 @@ if __name__ == '__main__':
     )
 
     sample_objects(sampling_config)
+
+    rospy.ServiceProxy("/mujoco_server/shutdown", Empty)(EmptyRequest())
