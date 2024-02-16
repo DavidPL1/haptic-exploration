@@ -1,4 +1,6 @@
 import numpy as np
+from enum import Enum
+
 from haptic_exploration.util import Pose, GlanceAreaBB
 
 
@@ -35,19 +37,42 @@ basic_objects = {
 ycb_inactive_object_y = -0.4
 ycb_glance_object_pose = Pose(np.array([0, 0, 0.36]), np.array([0, 0, 0, 0]))
 
-ycb_objects_glance_area = GlanceAreaBB((-0.075, 0.075), (-0.075, 0.075), (0.39, 0.54))
-ycb_objects_z_buffer = 0.05
+ycb_glance_area = GlanceAreaBB((-0.18, 0.18), (-0.14, 0.14), (0.39, 0.51))
+ycb_z_buffer = 0.05
 
-ycb_objects = {
-    2: "002_master_chef_can",
-    3: "003_cracker_box",
-    4: "004_sugar_box",
-    5: "005_tomato_soup_can",
-    6: "006_mustard_bottle"
-}
+ycb_names = [
+    "001_chips_can",
+    "002_master_chef_can",
+    "003_cracker_box",
+    "004_sugar_box",
+    "005_tomato_soup_can",
+    "006_mustard_bottle",
+    "007_tuna_fish_can",
+    "008_pudding_box",
+    "009_gelatin_box",
+    "010_potted_meat_can",
+    "011_banana",
+    "012_strawberry",
+    "013_apple",
+    "014_lemon",
+    "015_peach",
+    "016_pear",
+    "017_orange",
+    "018_plum",
+    "019_pitcher_base",
+]
+ycb_objects = {int(name.split("_")[0]): name for name in ycb_names}
+
 
 ycb_objects_custom_rotation = {
-    6: {"z": -67}
+    2: {"y": 90},
+    3: {"y": 90},
+    4: {"y": 90},
+    5: {"y": 90},
+    6: {"z": -67},
+    8: {"z": -28},
+    9: {"z": 77},
+    10: {"x": 90, "y": 90, "z": -3}
 }
 
 ycb_objects_custom_position = {
@@ -55,7 +80,25 @@ ycb_objects_custom_position = {
     3: [-0.1, 0.01, 0.022],
     4: [-0.085, 0.02, 0.015],
     5: [-0.05, -0.084, 0.024],
-    6: [-0.085, 0, 0]
+    6: [-0.085, 0, 0],
+    7: [0.026, 0.02, 0],
+    8: [-0.008, -0.018, 0],
+    9: [0, 0.023, 0],
+    10: [-0.04, 0.033, 0.051],
+}
+
+
+class YCBMesh(Enum):
+    TSDF = "tsdf"
+    Poisson = "poisson"
+    Google16k = "google_16k"
+    Google64k = "google_64k"
+    Google512k = "google_64k"
+
+
+ycb_objects_default_mesh = YCBMesh.Google16k
+ycb_objects_custom_meshes = {
+    1: YCBMesh.TSDF
 }
 
 

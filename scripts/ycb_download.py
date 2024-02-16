@@ -107,7 +107,7 @@ if __name__ == "__main__":
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
 
-    if files_to_download == "all":
+    if files_to_download == ["all"]:
         files_to_download = ["berkeley_rgbd", "berkeley_rgb_highres", "berkeley_processed", "google_16k", "google_64k", "google_512k"]
     if objects_to_download == ["demo"]:
         objects_to_download = ["001_chips_can",

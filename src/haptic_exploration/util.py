@@ -1,7 +1,7 @@
+import math
 import numpy as np
 
 from dataclasses import dataclass
-from pyquaternion import Quaternion
 from typing import List, Tuple
 from geometry_msgs.msg import PoseStamped, Transform
 
@@ -33,12 +33,6 @@ class Pose:
 
 
 @dataclass
-class Trajectory:
-    start_pose: Pose
-    end_pose: Pose
-
-
-@dataclass
 class GlanceParameters:
     target_pose: Pose
     approach_direction: np.ndarray
@@ -51,14 +45,9 @@ class GlanceAreaBB:
     z_limits: Tuple[float, float]
 
 
-def get_myrmex_normal(myrmex_orientation): 
-    rot_quat = Quaternion(myrmex_orientation)
-    base_normal = np.array([0, 0, 1])
-    myrmex_normal = rot_quat.rotate(base_normal)
-    return myrmex_normal
+def rad2deg(rad):
+    return rad / math.pi * 180
 
 
-def calculate_start_pose(glance_parameters: GlanceParameters, distance=0.3):
-    approach_direction_normalized = glance_parameters.approach_direction/np.linalg.norm(glance_parameters.approach_direction)
-    start_point = glance_parameters.target_pose.point - distance*approach_direction_normalized
-    return Pose(start_point, glance_parameters.target_pose.orientation)
+def deg2rad(deg):
+    return deg / 180 * math.pi

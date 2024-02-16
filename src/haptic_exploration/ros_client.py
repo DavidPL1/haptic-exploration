@@ -2,12 +2,14 @@ import rospy
 import actionlib
 import numpy as np
 
+from rospy.exceptions import ROSException
 from typing import Iterator, Tuple
+
 from haptic_exploration.util import Pose
 from mujoco_ros_msgs.msg import StepAction, StepGoal, MocapState
-from mujoco_ros_msgs.srv import SetBodyState, SetBodyStateRequest, GetBodyState, GetBodyStateRequest, GetBodyStateResponse
+from mujoco_ros_msgs.srv import SetBodyState, SetBodyStateRequest, GetBodyState, GetBodyStateRequest, GetBodyStateResponse, SetPause, SetPauseRequest, Reload, ReloadRequest
 from tactile_msgs.msg import TactileState
-from std_srvs.srv import Empty
+from std_srvs.srv import Empty, SetBool, SetBoolRequest
 
 
 class MujocoRosClient:
@@ -18,21 +20,42 @@ class MujocoRosClient:
         rospy.Subscriber("/tactile_module_16x16_v2", TactileState, self.myrmex_cb)
         self.current_myrmex_state = None
 
+        self.mocap_state_publisher = rospy.Publisher("/mujoco_server/mocap_poses", MocapState, queue_size=100)
+
         self.step_action_client = actionlib.SimpleActionClient("/mujoco_server/step", StepAction)
         self.step_action_client.wait_for_server()
 
         self.reset_client = rospy.ServiceProxy("/mujoco_server/reset", Empty)
-        self.reset_client.wait_for_service()
-
         self.set_body_state_client = rospy.ServiceProxy("mujoco_server/set_body_state", SetBodyState)
-        self.set_body_state_client.wait_for_service()
-
         self.get_body_state_client = rospy.ServiceProxy("/mujoco_server/get_body_state", GetBodyState)
-        self.get_body_state_client.wait_for_service()
+        self.tactile_set_pause_client = rospy.ServiceProxy("/tactile_module_16x16_v2/set_pause", SetBool)
+        self.reload_client = rospy.ServiceProxy('/mujoco_server/reload', Reload)
+        self.set_pause_client = rospy.ServiceProxy('/mujoco_server/set_pause', SetPause)
 
-        self.mocap_state_publisher = rospy.Publisher("/mujoco_server/mocap_poses", MocapState, queue_size=100)
+        service_clients = [
+            self.reset_client,
+            self.set_body_state_client,
+            self.get_body_state_client,
+            self.tactile_set_pause_client,
+            self.reload_client,
+            self.set_pause_client
+        ]
+        for service_client in service_clients:
+            try:
+                service_client.wait_for_service(2)
+            except ROSException:
+                rospy.logerr(f"Timeout for service {service_client.resolved_name}")
 
         rospy.rostime.wallsleep(0.5)
+
+    def set_pause(self, paused):
+        resp = self.set_pause_client(SetPauseRequest(paused=paused))
+        return resp.success
+
+    def toggle_myrmex(self, paused):
+        set_tactile_pause_request = SetBoolRequest()
+        set_tactile_pause_request.data = paused
+        self.tactile_set_pause_client.call(set_tactile_pause_request)
 
     def myrmex_cb(self, tactile_state: TactileState) -> None:
         self.current_myrmex_state = tactile_state
@@ -73,3 +96,12 @@ class MujocoRosClient:
             except:
                 if rospy.is_shutdown():
                     break
+
+    def load_model(self, filepath: str):
+        # TODO: move pause into init?
+        self.set_pause(False)
+        rospy.sleep(0.2)
+        self.set_pause(True)
+
+        resp = self.reload_client(ReloadRequest(model=filepath))
+        return resp.success

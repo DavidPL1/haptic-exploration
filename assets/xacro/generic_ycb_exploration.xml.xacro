@@ -30,6 +30,7 @@
         <material name="table_material" specular="0.1" shininess="0.5" reflectance="0.5" rgba="0.73 0.73 0.73 1" />
         <material name="object_material" specular="0" shininess="0.5" reflectance="0" rgba="0.3 0.3 0.8 0.8" />
         <material name="glance_material" specular="0" shininess="0.5" reflectance="0" rgba="0 1 0 0.13" />
+        <material name="alignment_material" specular="0" shininess="0.5" reflectance="0" rgba="1 0 0 0.13" />
 	</asset>
 
     <xacro:object_asset object_model_subpath="$(arg mesh_subpath)"/>
@@ -38,6 +39,8 @@
 		<geom name="ground_plane" pos="0 0 0" type="plane" condim="3" size="45 45 10" material="floor_material" rgba="1 1 1 1"/>
 		<geom name="table" pos="0 0 0.18" size="0.2 0.2 0.18" type="box" material="table_material"/>
 		<site name="glance_site" pos="0 0 0.39" type="box" material="glance_material" size="0.18 0.14 0.12"/>
+		<site name="align1" pos="0 0 0.39" type="box" material="alignment_material" size="0.2 0.002 0.12"/>
+		<site name="align2" pos="0 0 0.39" type="box" material="alignment_material" size="0.002 0.2 0.12"/>
 		<body name="board_boundary" pos="0 0 0.36">
 			<geom type="box" pos="0.125 0 0.015" size="0.075 0.2 0.015"/>
 			<body euler="0 0 1.57079632679">
