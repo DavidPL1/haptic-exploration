@@ -29,9 +29,12 @@ if __name__ == '__main__':
     available_objects = [list(mujoco_config.ycb_objects.keys())[list(mujoco_config.ycb_objects.values()).index(x)] for x in available_objects]
     rospy.loginfo(f"Available objects: {available_objects}")
 
-    splits = np.array_split(available_objects, num_splits)
-    chosen_object_ids = splits[chunk]
-    chosen_object_dict = {id: mujoco_config.ycb_objects[id] for id in chosen_object_ids}
+    if num_splits > 1:
+        splits = np.array_split(available_objects, num_splits)
+        chosen_object_ids = splits[chunk]
+        chosen_object_dict = {id: mujoco_config.ycb_objects[id] for id in chosen_object_ids}
+    else:
+        chosen_object_dict = {id: mujoco_config.ycb_objects[id] for id in available_objects}
 
     sampling_config = SamplingConfig(
         ObjectSet.YCB,
