@@ -37,7 +37,7 @@ basic_objects = {
 ycb_inactive_object_y = -0.4
 ycb_glance_object_pose = Pose(np.array([0, 0, 0.36]), np.array([0, 0, 0, 0]))
 
-ycb_glance_area = GlanceAreaBB((-0.18, 0.18), (-0.14, 0.14), (0.39, 0.51))
+ycb_glance_area = GlanceAreaBB((-0.2, 0.2), (-0.15, 0.15), (0.39, 0.51))
 ycb_z_buffer = 0.05
 
 ycb_names = [

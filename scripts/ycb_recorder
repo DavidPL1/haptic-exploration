@@ -39,9 +39,9 @@ if __name__ == '__main__':
     sampling_config = SamplingConfig(
         ObjectSet.YCB,
         chosen_object_dict,
-        [("x", 3), ("x_angle", 3)],
+        [("x", 21), ("y", 16), ("x_angle", 41)],
         mujoco_config.ycb_glance_area,
-        deg2rad(45),
+        deg2rad(20),
         mujoco_config.ycb_z_buffer,
     )
 
