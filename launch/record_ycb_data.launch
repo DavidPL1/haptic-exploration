@@ -10,18 +10,24 @@
   <arg name="no_x"     default="false" />
   <arg name="verbose"  default="false" />
 
-  <arg name="show_surfaces" default="true" doc="Should the contact surfaces be shown?"/>
-  <arg name="show_cells"    default="true" doc="Should the tactile sensor cells be visualized?"/>
+  <arg name="show_surfaces" default="false" doc="Should the contact surfaces be shown?"/>
+  <arg name="show_cells"    default="false" doc="Should the tactile sensor cells be visualized?"/>
   <arg name="num_splits"    default="4"    doc="Number of splits for processed object." />
   <arg name="chunk"         default="0"    doc="Chunk of the set to process." />
+  <arg name="xacro_outpath" default="/tmp/$(env USER)_model.xml" />
 
   <param name="/use_sim_time" value="true"/>
 
+  <param name="mujoco_xml"
+        command="xacro $(find haptic_exploration)/assets/xacro/generic_ycb_exploration.xml.xacro -o $(arg xacro_outpath)">
+  </param>
+
   <include file="$(find mujoco_ros)/launch/launch_server.launch" pass_all_args="true" >
     <arg name="console_config_file"  value="$(find mujoco_contact_surface_sensors)/rosconsole.config" />
+    <arg name="modelfile" value="$(arg xacro_outpath)" />
   </include>
 
-  <arg name="venv" value="$(find haptic_exploration)/../../venv/bin/python3" />
+  <arg name="venv" default="$(find haptic_exploration)/../../venv/bin/python3" />
   <node name="record_ycb_data" pkg="haptic_exploration" type="ycb_recorder" output="screen" launch-prefix = "$(arg venv)" >
     <param name="show_surfaces" value="$(arg show_surfaces)" />
     <param name="num_splits"    value="$(arg num_splits)" />
