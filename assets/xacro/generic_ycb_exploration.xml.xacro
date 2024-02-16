@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mujoco model="exploration_mocap_simple" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:arg name="use_object" default="0" />
     <xacro:arg name="mesh_subpath" default="not set!"/>
 	<xacro:arg name="visualize_surfaces" default="0" />
     <xacro:arg name="mesh_pos" default="0 0 0" />
@@ -33,7 +34,9 @@
         <material name="alignment_material" specular="0" shininess="0.5" reflectance="0" rgba="1 0 0 0.13" />
 	</asset>
 
-    <xacro:object_asset object_model_subpath="$(arg mesh_subpath)"/>
+    <xacro:if value="$(arg use_object)" >
+		<xacro:object_asset object_model_subpath="$(arg mesh_subpath)"/>
+	</xacro:if>
 
     <worldbody>
 		<geom name="ground_plane" pos="0 0 0" type="plane" condim="3" size="45 45 10" material="floor_material" rgba="1 1 1 1"/>
@@ -55,7 +58,9 @@
 		</body>
 		<light directional="true" ambient="0.2 0.2 0.2" diffuse="0.8 0.8 0.8" specular="0.3 0.3 0.3" castshadow="false" pos="0 0 4" dir="0 0 -1" name="light0" />
 
-        <xacro:object_body pos="$(arg mesh_pos)" rot="$(arg mesh_rot)"/>
+		<xacro:if value="$(arg use_object)" >
+			<xacro:object_body pos="$(arg mesh_pos)" rot="$(arg mesh_rot)"/>
+		</xacro:if>
 	</worldbody>
 
 	<xacro:myrmex_mocap />

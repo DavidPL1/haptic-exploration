@@ -51,6 +51,7 @@ class YCBObjectController(BaseObjectController):
         show_surfaces = rospy.get_param("~show_surfaces", False)
 
         arg_map = dict(
+            use_object='1',
             mesh_subpath=mesh_path,
             visualize_surfaces=f'{int(show_surfaces)}',
             mesh_pos=' '.join(map(str, mesh_pos)),
