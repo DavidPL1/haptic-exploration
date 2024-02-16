@@ -48,8 +48,6 @@ class MocapGlanceController(MujocoRosClient):
         self.max_angle = max_angle
         self.z_clearance = z_clearance
 
-        self.current_myrmex_state = None
-
     def set_object(self, object_id):
         if object_id is None or object_id < 0:
             self.object_controller.clear_object(self)
@@ -68,19 +66,18 @@ class MocapGlanceController(MujocoRosClient):
         total_glance_steps = int(1000 * abs(start_pose.point[2] - target_pose.point[2]) / mujoco_config.mocap_velocity)
 
         # wait for myrmex to reach starting pose
-        self.toggle_myrmex(True)
-        self.set_mocap_body(mujoco_config.MYRMEX_MOCAP_BODY, start_pose)
         while True:
+            self.toggle_myrmex(True)
+            self.set_mocap_body(mujoco_config.MYRMEX_MOCAP_BODY, start_pose)
             self.perform_steps(sim_step_size)
             if fps_timer is not None:
                 fps_timer.sleep()
             myrmex_pose, _ = self.get_body_pose_linvel(mujoco_config.MYRMEX_BODY)
+            print(f"In while true: {np.linalg.norm(start_pose.point - myrmex_pose.point)}; target: {start_pose.point}; current: {myrmex_pose.point}")
             if np.linalg.norm(start_pose.point - myrmex_pose.point) < 0.02:
                 break
-        self.current_myrmex_state = None
 
         # perform glance
-        self.toggle_myrmex(False)
         glance_monitor = GlancePressureMonitor()
         for elapsed_steps in self.perform_steps_chunked(total_glance_steps, sim_step_size):
             if fps_timer is not None:
@@ -91,12 +88,10 @@ class MocapGlanceController(MujocoRosClient):
             mocap_pose = Pose(interpolated_point, target_pose.orientation)
             self.set_mocap_body(mujoco_config.MYRMEX_MOCAP_BODY, mocap_pose)
 
-            if self.current_myrmex_state is not None:
-                vel = self.get_body_pose_linvel(mujoco_config.MYRMEX_BODY)
-                if glance_monitor.add(np.array(self.current_myrmex_state.sensors[0].values), vel, mocap_pose):
-                    break
-
-        self.toggle_myrmex(True)
+            myrmex_data = self.get_myrmex_data()
+            vel = self.get_body_pose_linvel(mujoco_config.MYRMEX_BODY)
+            if glance_monitor.add(myrmex_data, vel, mocap_pose):
+                break
 
         # compute coordinates relative to BB
         pose = glance_monitor.max_values_pose

@@ -1,3 +1,5 @@
+import time
+import sys
 import os
 import numpy as np
 import functools
@@ -32,9 +34,6 @@ class SamplingConfig:
 def sample_objects(sc: SamplingConfig):
     glance_controller = MocapGlanceController(get_object_controller(sc.object_set), sc.glance_area, sc.max_angle, sc.z_clearance)
 
-    glance_controller.set_object(10)
-    return
-
     names = [name for name, _ in sc.param_resolution]
     sampling_resolutions = [sampling_res for _, sampling_res in sc.param_resolution]
 
@@ -50,12 +49,17 @@ def sample_objects(sc: SamplingConfig):
     dim_values = [list(zip(np.arange(sampling_res), np.linspace(-limit, limit, sampling_res), np.linspace(0, 1, sampling_res))) for sampling_res, limit in zip(sampling_resolutions, limits)]
     param_spec = [(name, [v[2] for v in values]) for name, values in zip(names, dim_values)]
 
+    if not glance_controller.wait_for_sim():
+        rospy.logerr("Model could not be loaded!")
+        sys.exit(-1)
+
     with tqdm(total=len(sc.object_dict)*functools.reduce(lambda a, b: a*b, sampling_resolutions)) as pbar:
 
         for i, (object_index, object_name) in enumerate(sorted(sc.object_dict.items(), key=lambda e: e[0])):
             pbar.set_description(f"Sampling {len(sc.object_dict)} objects with resolution {sampling_resolutions_str}")
 
             glance_controller.set_object(object_index)
+
             object_pressure_table = np.zeros(sampling_resolutions + [256], dtype=float)
             object_position_table = np.zeros(sampling_resolutions + [7], dtype=float)
 
