@@ -17,18 +17,19 @@ from std_srvs.srv import Empty, EmptyRequest
 
 if __name__ == '__main__':
 
-    num_splits = rospy.get_param("~num_splits", 1)
-    chunk = rospy.get_param("~chunk", 0)
+    num_splits = rospy.get_param("/record_ycb_data/num_splits", 1)
+    chunk = rospy.get_param("/record_ycb_data/chunk", 0)
+    rospy.logwarn(f"num_splits: {num_splits}; chunk: {chunk}")
     assert chunk < num_splits, "Chunk must be smaller than num_splits!"
 
     base_ycb_dir = osp.join(RosPack().get_path('haptic_exploration'), 'assets', 'meshes', 'ycb')
     available_objects = os.listdir(base_ycb_dir)
     available_objects = [x for x in available_objects if osp.isdir(osp.join(base_ycb_dir, x))]
     available_objects = [x for x in available_objects if x in mujoco_config.ycb_objects.values()]
-    rospy.loginfo(f"Available objects: {available_objects}")
+    rospy.logwarn(f"Available objects: {available_objects}")
 
     available_objects = [list(mujoco_config.ycb_objects.keys())[list(mujoco_config.ycb_objects.values()).index(x)] for x in available_objects]
-    rospy.loginfo(f"Available objects: {available_objects}")
+    rospy.logwarn(f"Available objects: {available_objects}")
 
     if num_splits > 1:
         splits = np.array_split(available_objects, num_splits)
@@ -36,6 +37,8 @@ if __name__ == '__main__':
         chosen_object_dict = {id: mujoco_config.ycb_objects[id] for id in chosen_object_ids}
     else:
         chosen_object_dict = {id: mujoco_config.ycb_objects[id] for id in available_objects}
+
+    rospy.logwarn(f"Objects handled by this run: {chosen_object_dict.values()}")
 
     sampling_config = SamplingConfig(
         ObjectSet.YCB,
