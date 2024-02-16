@@ -34,6 +34,9 @@ class SamplingConfig:
 def sample_objects(sc: SamplingConfig):
     glance_controller = MocapGlanceController(get_object_controller(sc.object_set), sc.glance_area, sc.max_angle, sc.z_clearance)
 
+    glance_controller.set_object(18)
+    return
+
     names = [name for name, _ in sc.param_resolution]
     sampling_resolutions = [sampling_res for _, sampling_res in sc.param_resolution]
 

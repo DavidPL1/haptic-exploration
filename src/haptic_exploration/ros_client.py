@@ -46,7 +46,7 @@ class MujocoRosClient:
         ]
         for service_client in service_clients:
             try:
-                service_client.wait_for_service(2)
+                service_client.wait_for_service(1)
             except ROSException:
                 rospy.logerr(f"Timeout for service {service_client.resolved_name}")
 
@@ -57,8 +57,6 @@ class MujocoRosClient:
         return resp.success
 
     def toggle_myrmex(self, paused):
-        # self.tactile_set_pause_client = rospy.ServiceProxy("/tactile_module_16x16_v2/set_pause", SetBool)
-        # self.tactile_set_pause_client.wait_for_service(2)
         set_tactile_pause_request = SetBoolRequest()
         set_tactile_pause_request.data = paused
         self.tactile_set_pause_client.call(set_tactile_pause_request)

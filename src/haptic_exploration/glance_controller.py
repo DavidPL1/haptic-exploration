@@ -73,7 +73,6 @@ class MocapGlanceController(MujocoRosClient):
             if fps_timer is not None:
                 fps_timer.sleep()
             myrmex_pose, _ = self.get_body_pose_linvel(mujoco_config.MYRMEX_BODY)
-            print(f"In while true: {np.linalg.norm(start_pose.point - myrmex_pose.point)}; target: {start_pose.point}; current: {myrmex_pose.point}")
             if np.linalg.norm(start_pose.point - myrmex_pose.point) < 0.02:
                 break
 
