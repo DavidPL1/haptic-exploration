@@ -110,10 +110,25 @@ if __name__ == "__main__":
     if files_to_download == ["all"]:
         files_to_download = ["berkeley_rgbd", "berkeley_rgb_highres", "berkeley_processed", "google_16k", "google_64k", "google_512k"]
     if objects_to_download == ["demo"]:
-        objects_to_download = ["001_chips_can",
-                            "002_master_chef_can",
-                            "003_cracker_box",
-                            "004_sugar_box"]
+        objects_to_download = [
+            "002_master_chef_can",
+            "003_cracker_box",
+            "004_sugar_box",
+            "005_tomato_soup_can",
+            "006_mustard_bottle",
+            "007_tuna_fish_can",
+            "008_pudding_box",
+            "009_gelatin_box",
+            "010_potted_meat_can",
+            "011_banana",
+            "012_strawberry",
+            "013_apple",
+            "014_lemon",
+            "015_peach",
+            "016_pear",
+            "017_orange",
+            "018_plum",
+        ]
 
     base_ycb_dir = osp.join(RosPack().get_path('haptic_exploration'), 'assets', 'meshes', 'ycb')
     available_objects = os.listdir(base_ycb_dir)
