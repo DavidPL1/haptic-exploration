@@ -1,6 +1,7 @@
 assets/meshes/ycb/*
 !assets/meshes/ycb/.gitkeep
 ycb_downloads
+haptic_sampling
 
 # Created by https://www.toptal.com/developers/gitignore/api/python,pycharm,ros
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,pycharm,ros
