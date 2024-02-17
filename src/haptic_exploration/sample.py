@@ -30,11 +30,7 @@ class SamplingConfig:
     max_angle: float
     z_clearance: float
 
-
-def sample_objects(sc: SamplingConfig):
-    glance_controller = MocapGlanceController(get_object_controller(sc.object_set), sc.glance_area, sc.max_angle, sc.z_clearance)
-
-    names = [name for name, _ in sc.param_resolution]
+def get_sampling_dir(sc: SamplingConfig):
     sampling_resolutions = [sampling_res for _, sampling_res in sc.param_resolution]
 
     sampling_resolutions_str = 'x'.join([str(sample_res) for sample_res in sampling_resolutions])
@@ -43,6 +39,16 @@ def sample_objects(sc: SamplingConfig):
         "haptic_sampling",
         "_".join([sc.object_set.value, sampling_resolutions_str])
     )
+    return sampling_dir
+
+def sample_objects(sc: SamplingConfig):
+    glance_controller = MocapGlanceController(get_object_controller(sc.object_set), sc.glance_area, sc.max_angle, sc.z_clearance)
+
+    names = [name for name, _ in sc.param_resolution]
+    sampling_resolutions = [sampling_res for _, sampling_res in sc.param_resolution]
+
+    sampling_resolutions_str = 'x'.join([str(sample_res) for sample_res in sampling_resolutions])
+    sampling_dir = get_sampling_dir(sc)
     sampling_dir.mkdir(parents=True, exist_ok=True)
 
     limits = [sc.max_angle if "angle" in name else 1 for name in names]
