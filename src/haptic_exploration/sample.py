@@ -41,7 +41,7 @@ def sample_objects(sc: SamplingConfig):
     sampling_dir = Path(
         RosPack().get_path("haptic_exploration"),
         "haptic_sampling",
-        "_".join([datetime.now().strftime(f"%Y_%m_%d_%H-%M-%S"), sc.object_set.value, sampling_resolutions_str])
+        "_".join([sc.object_set.value, sampling_resolutions_str])
     )
     sampling_dir.mkdir(parents=True, exist_ok=True)
 
