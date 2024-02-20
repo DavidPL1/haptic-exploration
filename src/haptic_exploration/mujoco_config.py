@@ -46,7 +46,7 @@ ycb_names = [
     "003_cracker_box",
     "004_sugar_box",
     "005_tomato_soup_can",
-    "006_mustard_bottle",
+    #"006_mustard_bottle", # TODO: fix sampling with correct rotation
     "007_tuna_fish_can",
     "008_pudding_box",
     "009_gelatin_box",
@@ -109,7 +109,7 @@ ycb_objects_custom_rotation = {
     3: {"y": 90},
     4: {"y": 90},
     5: {"y": 90},
-    6: {"z": -67},
+    6: {"y": 90, "z": -67},
     8: {"z": -28},
     9: {"z": 77},
     10: {"x": 90, "y": 90, "z": -3},

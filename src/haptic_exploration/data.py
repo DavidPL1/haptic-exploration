@@ -3,6 +3,7 @@ import json
 import pickle
 import numpy as np
 
+from random import randint
 from pathlib import Path
 from typing import Tuple
 from collections import defaultdict
@@ -63,9 +64,9 @@ class GlanceTable:
 
         object_data = []
 
-        for filename in os.listdir(os.path.join(object_dir, "pkl")):
+        for filename in os.listdir(object_dir):
             if filename.endswith(".pkl"):
-                with open(os.path.join(object_dir, "pkl", filename), "rb") as object_file:
+                with open(os.path.join(object_dir, filename), "rb") as object_file:
                     object_data.append(pickle.load(object_file))
 
         try:
@@ -97,20 +98,51 @@ class GlanceTable:
 
         self.glance_area = GLANCE_AREA[object_set]
 
-    def _get_param_indices(self, params_normalized):
+        self.object_indices = dict()
+        for object_id in self.id_label.keys():
+            x0, x1 = np.where(self.pressure_table[object_id].sum(axis=(1, 2, 3)) > 0)[0][[0, -1]]
+            y0, y1 = np.where(self.pressure_table[object_id].sum(axis=(0, 2, 3)) > 0)[0][[0, -1]]
+            self.object_indices[object_id] = (x0, x1), (y0, y1)
+            print(f"{self.id_label[object_id]} indices: x={x0, x1}, y={y0, y1}, footprint={x1-x0, y1-y0}")
+
+    def _get_indices(self, params_normalized):
         return tuple(round(param_normalized * (param_resolution - 1)) for param_normalized, param_resolution in zip(params_normalized, self.param_resolution))
 
-    def get_pressure_position(self, object_id, params_normalized, zero_centered=False, add_noise=False):
+    def get_pressure_position(self, object_id, params_normalized, zero_centered=False, add_noise=False, offset=(0, 0)):
         if zero_centered:
             params_normalized = [(param+1)/2 for param in params_normalized]
-        indices = (object_id,) + self._get_param_indices(params_normalized)
-        pressure = self.pressure_table[indices]
-        position = self.position_table[indices]
+        indices = self._get_indices(params_normalized)
+        return self.get_pressure_position_indices(object_id, indices, add_noise=add_noise, offset=offset)
+
+    def get_pressure_position_indices(self, object_id, indices, add_noise=False, offset=(0, 0)):
+
+        indices = [idx-idx_o for idx, idx_o in zip(indices, offset)] + list(indices[len(offset):])
+        boundary_offset = np.zeros(2, dtype=int)
+        for i, (idx, res) in enumerate(zip(indices[:2], self.param_resolution)):
+            if idx < 0:
+                boundary_offset[i] = idx - res + 1
+            elif idx >= res:
+                boundary_offset[i] = - idx - 1 + res
+        indices = [idx+idx_b for idx, idx_b in zip(indices, boundary_offset)] + list(indices[len(boundary_offset):])
+        indices = tuple(indices)
+
+        position_offset = np.array([(idx_o - idx_b) * (1/(res-1)) for idx_o, idx_b, res in zip(offset, boundary_offset, self.param_resolution)])
+
+        indices = (object_id,) + indices
+        pressure = self.pressure_table[indices].copy()
+        position = self.position_table[indices].copy()
+        position[:position_offset.shape[0]] += position_offset
         if add_noise:
             position = apply_position_noise(position, self.glance_area, TRANSLATION_STD_M, ROTATION_STD_DEG)
         return pressure, position
 
     def get_params(self, params_normalized):
-        exact_params = tuple(self.param_values[param][param_idx] for param, param_idx in enumerate(self._get_param_indices(params_normalized)))
+        exact_params = tuple(self.param_values[param][param_idx] for param, param_idx in enumerate(self._get_indices(params_normalized)))
         table_params = tuple(param_min + (param_max - param_min) * param_normalized for param_normalized, (param_min, param_max) in zip(params_normalized, self.param_ranges))
         return exact_params, table_params
+
+    def generate_offset(self, object_id):
+        max_x, max_y = self.param_resolution[:2]
+        (x0, x1), (y0, y1) = self.object_indices[object_id]
+
+        return randint(-x0, max_x - x1), randint(-y0, max_y - y1)
