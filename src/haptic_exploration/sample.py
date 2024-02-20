@@ -53,7 +53,7 @@ def sample_objects(sc: SamplingConfig):
 
     limits = [sc.max_angle if "angle" in name else 1 for name in names]
     dim_values = [list(zip(np.arange(sampling_res), np.linspace(-limit, limit, sampling_res), np.linspace(0, 1, sampling_res))) for sampling_res, limit in zip(sampling_resolutions, limits)]
-    param_spec = [(name, [v[2] for v in values]) for name, values in zip(names, dim_values)]
+    param_spec = [(name, [v[2] for v in values]) for name, values in zip(names, dim_values)] # TODO: v[1] instead of v[2] for scaled values
 
     if not glance_controller.wait_for_sim():
         rospy.logerr("Model could not be loaded!")

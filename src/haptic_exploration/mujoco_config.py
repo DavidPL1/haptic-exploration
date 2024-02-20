@@ -59,11 +59,11 @@ ycb_names = [
     "016_pear",
     "017_orange",
     "018_plum",
-    #"019_pitcher_base",
-    #"021_bleach_cleanser",
+    "019_pitcher_base",
+    "021_bleach_cleanser",
     #"022_windex_bottle",
     #"023_wine_glass",
-    #"024_bowl",
+    "024_bowl",
     #"025_mug",
     #"026_sponge",
     #"027-skillet",
@@ -120,6 +120,8 @@ ycb_objects_custom_rotation = {
     16: {"z": -86},
     17: {"y": 180},
     18: {"z": 60},
+    19: {"y": 87.2, "z": 15},
+    21: {"y": 92.5, "z": 90}
 }
 
 ycb_objects_custom_position = {
@@ -139,7 +141,10 @@ ycb_objects_custom_position = {
     15: [0.03, 0.005, 0.02],
     16: [-0.014, -0.031, 0],
     17: [-0.008, 0.02, 0.0705],
-    18: [0.02, -0.002, 0]
+    18: [0.02, -0.002, 0],
+    19: [-0.12, -0.03, 0.031],
+    21: [-0.12, 0.018, 0.021],
+    24: [0.015, 0.047, 0]
 }
 
 
@@ -153,7 +158,7 @@ class YCBMesh(Enum):
 
 ycb_objects_default_mesh = YCBMesh.Google16k
 ycb_objects_custom_meshes = {
-    1: YCBMesh.TSDF
+
 }
 
 
