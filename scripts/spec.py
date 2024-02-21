@@ -4,7 +4,7 @@ from haptic_exploration.config import ObjectSet
 
 def get_pretrained_cls_weights(object_set, model_type):
     spec = {
-        (ObjectSet.YCB, ModelType.Transformer):       "ycb/cls/weights_2024_02_19_12-26-38_HapticTransformer_cls_pretrained_random_0_8",
+        (ObjectSet.YCB, ModelType.Transformer):       "ycb/cls/weights_2024_02_21_17-13-34_HapticTransformer_cls_pretrained_random_0_8",
     }
     return spec[(object_set, model_type)]
 

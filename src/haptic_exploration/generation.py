@@ -14,13 +14,11 @@ def generate_random_glance_sequences(glance_table, num_glances, num_object_sampl
 
     with tqdm(total=len(glance_table.id_label)*num_object_samples, desc="Generate Random Glance Sequences") as pbar:
         for object_idx in glance_table.id_label.keys():
-            object_offsets = []
             for i in range(num_object_samples):
                 if num_glances == 0:
                     pressure_sequence, position_sequence, params_sequence = [], [], []
                 else:
                     trans_offset = glance_table.generate_offset(object_idx)
-                    object_offsets.append(trans_offset)
                     params_sequence = [tuple(random.random() for _ in range(glance_table.n_params)) for _ in range(num_glances)]
                     pressure_position_sequence = [glance_table.get_pressure_position(object_idx, params, offset=trans_offset, add_noise=add_noise) for params in params_sequence]
                     pressure_sequence, position_sequence = unzip(pressure_position_sequence)

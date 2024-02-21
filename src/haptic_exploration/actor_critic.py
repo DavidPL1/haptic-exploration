@@ -148,6 +148,7 @@ class ActorCritic:
         self.epoch_yps = []
         self.epoch_decisions = []
         self.epoch_glance_params = []
+        self.epoch_zero_glances = []
 
     def store_checkpoint(self, i_epoch, training_stats, validation_stats, save_weights=False):
         if i_epoch in [-1, 0]:
@@ -341,6 +342,7 @@ class ActorCritic:
         self.epoch_n_glances_sum += info["num_glances"]
         self.epoch_ys.append(info["object_id"])
         self.epoch_yps.append(action[1] if action[0] == 1 else -1)
+        self.epoch_zero_glances.append(sum([1 if np.abs(p).sum() == 0 else 0 for p in obs[1]]))
 
     def analyse_epoch(self, epoch_descr="", cm=True, draw_plots=True):
 
@@ -352,6 +354,7 @@ class ActorCritic:
         num_classified = self.epoch_num_episodes - num_not_classified
         accuracy_classified = 0 if num_classified == 0 else self.epoch_correct/num_classified
         n_glances_hist = OrderedDict([(n, self.epoch_n_glances.count(n)) for n in range(self.env.max_steps)])
+        zero_glances_hist = OrderedDict([(n, self.epoch_zero_glances.count(n)) for n in range(self.env.max_steps)])
 
         print()
         print(f"*** {self.epoch_num_episodes} episodes ***")
@@ -364,6 +367,7 @@ class ActorCritic:
         print(f"Accuracy of classified: {(100*accuracy_classified):.2f}%")
         print(f"n_glances hist:", ", ".join(f"{n}: {count}" for n, count in n_glances_hist.items()))
         print(f"Action std:", self.action_parameters)
+        print(f"Zero Glances hist:", ", ".join(f"{n}: {count}" for n, count in zero_glances_hist.items()))
 
         if draw_plots:
             # confusion matrix
@@ -378,19 +382,6 @@ class ActorCritic:
 
             # n glance histogram
             plot_n_glances_hist(self.epoch_n_glances, xticks=np.arange(self.env.max_steps+1))
-
-            """
-            if len(self.epoch_glance_params) > 0:
-                plot_glance_parameters(self.epoch_glance_params)
-                
-                glance_params = np.array(self.epoch_glance_params)
-                plt.plot(glance_params[:, 0], glance_params[:, 1], "o")
-                feature_position_params = np.array([get_feature_position_param(feature, zero_centered=True) for feature in range(4)])
-                plt.plot(feature_position_params[:, 0], feature_position_params[:, 1], "o", c="r")
-                plt.plot([1, 1, -1, -1], [1, -1, 1, -1], "o", c="k")
-                plt.suptitle(f"glance params (epoch {epoch_descr})")
-                plt.show(block=WAIT_PLOTS)
-            """
 
         return EpochStats(accuracy, avg_n_glances, avg_reward, self.epoch_num_episodes, num_not_classified, accuracy_classified, n_glances_hist)
 

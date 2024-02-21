@@ -99,10 +99,14 @@ class GlanceTable:
         self.glance_area = GLANCE_AREA[object_set]
 
         self.object_indices = dict()
+        self.object_nonzero_xy_count = dict()
+        self.object_nonzero_total_count = dict()
         for object_id in self.id_label.keys():
             x0, x1 = np.where(self.pressure_table[object_id].sum(axis=(1, 2, 3)) > 0)[0][[0, -1]]
             y0, y1 = np.where(self.pressure_table[object_id].sum(axis=(0, 2, 3)) > 0)[0][[0, -1]]
             self.object_indices[object_id] = (x0, x1), (y0, y1)
+            self.object_nonzero_total_count.append(self.pressure_table[object_id].sum(axis=(3)))
+            self.object_nonzero_xy_count.append(self.pressure_table[object_id].sum(axis=(2, 3)))
             print(f"{self.id_label[object_id]} indices: x={x0, x1}, y={y0, y1}, footprint={x1-x0, y1-y0}")
 
     def _get_indices(self, params_normalized):
@@ -145,4 +149,4 @@ class GlanceTable:
         max_x, max_y = self.param_resolution[:2]
         (x0, x1), (y0, y1) = self.object_indices[object_id]
 
-        return randint(-x0, max_x - x1), randint(-y0, max_y - y1)
+        return randint(-x0, max_x -1 - x1), randint(-y0, max_y - 1 - y1)
