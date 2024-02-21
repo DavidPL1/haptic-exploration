@@ -131,7 +131,7 @@ def train_cls(fixed_glances=False, save=True):
 def run_rl(save=True, init_pretrained=True, freeze_core=False, test=False):
 
     glance_table = GlanceTable(OBJECT_SET)
-    table_env = HapticExplorationTableEnv(glance_table, first_obs="empty", add_noise=ADD_NOISE)
+    table_env = HapticExplorationTableEnv(glance_table, first_obs="empty", add_noise=ADD_NOISE, add_offset=ADD_OFFSET)
 
     model_params = get_model_params_env(table_env, POSITION_EMBEDDED_DIM, PRESSURE_EMBEDDED_DIM, BASE_OUTPUT_DIM, NUM_GLANCES)
     core_class, core_params = get_model(MODEL_TYPE)
@@ -311,12 +311,13 @@ def main():
         raise Exception("invalid run type")
 
 
-RUN_TYPE = "test_rl"
+RUN_TYPE = "train_rl"
 OBJECT_SET = ObjectSet.YCB
 MODEL_TYPE = ModelType.Transformer
 RL_ACTION_TYPE = "hybrid"
 SHARED_ARCHITECTURE = True
 ADD_NOISE = False
+ADD_OFFSET = True
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:

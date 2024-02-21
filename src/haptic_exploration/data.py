@@ -116,21 +116,21 @@ class GlanceTable:
 
     def get_pressure_position_indices(self, object_id, indices, add_noise=False, offset=(0, 0)):
 
-        indices = [idx-idx_o for idx, idx_o in zip(indices, offset)] + list(indices[len(offset):])
+        indices1 = [idx-idx_o for idx, idx_o in zip(indices, offset)] + list(indices[len(offset):])
         boundary_offset = np.zeros(2, dtype=int)
-        for i, (idx, res) in enumerate(zip(indices[:2], self.param_resolution)):
+        for i, (idx, res) in enumerate(zip(indices1[:2], self.param_resolution)):
             if idx < 0:
-                boundary_offset[i] = idx - res + 1
+                boundary_offset[i] = -idx
             elif idx >= res:
                 boundary_offset[i] = - idx - 1 + res
-        indices = [idx+idx_b for idx, idx_b in zip(indices, boundary_offset)] + list(indices[len(boundary_offset):])
-        indices = tuple(indices)
+        indices2 = [idx+idx_b for idx, idx_b in zip(indices1, boundary_offset)] + list(indices1[len(boundary_offset):])
+        indices2 = tuple(indices2)
 
         position_offset = np.array([(idx_o - idx_b) * (1/(res-1)) for idx_o, idx_b, res in zip(offset, boundary_offset, self.param_resolution)])
 
-        indices = (object_id,) + indices
-        pressure = self.pressure_table[indices].copy()
-        position = self.position_table[indices].copy()
+        indices2 = (object_id,) + indices2
+        pressure = self.pressure_table[indices2].copy()
+        position = self.position_table[indices2].copy()
         position[:position_offset.shape[0]] += position_offset
         if add_noise:
             position = apply_position_noise(position, self.glance_area, TRANSLATION_STD_M, ROTATION_STD_DEG)

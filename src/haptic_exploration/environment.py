@@ -160,16 +160,17 @@ class HapticExplorationEnv(gym.Env):
 
 class HapticExplorationTableEnv(HapticExplorationEnv):
 
-    def __init__(self, glance_table: GlanceTable, add_noise=True, **kwargs):
+    def __init__(self, glance_table: GlanceTable, add_noise=True, add_offset=False, **kwargs):
         super().__init__(len(glance_table.id_label), glance_table.n_params, glance_table.position_table.shape[-1], glance_table.pressure_table.shape[-1], **kwargs)
         self.glance_table = glance_table
         self.add_noise = add_noise
+        self.apply_offset = add_offset
 
     def _set_object(self):
-        pass
+        self.offset = self.glance_table.generate_offset(self.object_id) if self.apply_offset else (0, 0)
 
     def _get_pressure_position(self, glance_params):
-        return self.glance_table.get_pressure_position(self.object_id, tuple(glance_params), zero_centered=True, add_noise=self.add_noise)
+        return self.glance_table.get_pressure_position(self.object_id, tuple(glance_params), zero_centered=True, add_noise=self.add_noise, offset=self.offset)
 
 
 class HapticExplorationSimEnv(HapticExplorationEnv):
