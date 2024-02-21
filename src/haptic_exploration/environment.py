@@ -6,7 +6,7 @@ from haptic_exploration.actions import DiscreteActionSpace, ContinuousActionSpac
 from haptic_exploration.data import GlanceTable
 from haptic_exploration.preprocessing import resize_pressure, pressure_normalization_binary
 from haptic_exploration.glance_controller import MocapGlanceController
-from haptic_exploration.object_controller import SimpleObjectController, CompositeObjectController
+from haptic_exploration.object_controller import SimpleObjectController, CompositeObjectController, YCBObjectController
 from haptic_exploration.glance_parameters import GlanceParameters
 
 
@@ -190,6 +190,8 @@ class HapticExplorationSimEnv(HapticExplorationEnv):
             controller_glance_params = GlanceParameters(x_factor=factors[0], y_angle_factor=factors[1])
         elif isinstance(self.glance_controller.object_controller, CompositeObjectController):
             controller_glance_params = GlanceParameters(x_factor=factors[0], y_factor=factors[1])
+        elif isinstance(self.glance_controller.object_controller, YCBObjectController):
+            controller_glance_params = GlanceParameters(x_factor=factors[0], y_factor=factors[1], x_angle_factor=factors[2])
         else:
             raise Exception("unsupported object controller")
 

@@ -105,11 +105,16 @@ class CompositeObjectController(BaseObjectController):
 
 class YCBObjectController(BaseObjectController):
 
-    def __init__(self):
+    def __init__(self, id_mapping=None):
         super().__init__(len(mujoco_config.ycb_objects))
+        self.id_mapping = id_mapping
         self.current_object_id = None
 
     def _build_model(self, object_id):
+
+        if self.id_mapping is not None:
+            object_id = self.id_mapping(object_id)
+
         object_rotation = np.array([0, 0, 0])
         if object_id in mujoco_config.ycb_objects_custom_rotation:
             for dim_name, rot in mujoco_config.ycb_objects_custom_rotation[object_id].items():

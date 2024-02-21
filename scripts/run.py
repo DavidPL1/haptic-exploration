@@ -15,7 +15,7 @@ from haptic_exploration.actor_critic import ActorCritic, ActorCriticHyperparamet
 from haptic_exploration.actions import HybridActionSpace, DiscreteActionSpace, ContinuousActionSpace, ActionSpaceConfig, \
     ParameterizedActionSpace
 from haptic_exploration.glance_controller import MocapGlanceController
-from haptic_exploration.object_controller import SimpleObjectController, CompositeObjectController
+from haptic_exploration.object_controller import SimpleObjectController, CompositeObjectController, YCBObjectController
 import haptic_exploration.mujoco_config as mujoco_config
 
 from spec import get_pretrained_cls_weights, get_trained_ac
@@ -65,6 +65,11 @@ def get_sim_env(object_set):
         glc = MocapGlanceController(SimpleObjectController(), mujoco_config.basic_objects_glance_area)
     elif object_set == ObjectSet.Composite:
         glc = MocapGlanceController(CompositeObjectController(mujoco_config.composite_objects), mujoco_config.composite_glance_area)
+    elif object_set == ObjectSet.YCB:
+        def id_mapping(object_id):
+            name = mujoco_config.ycb_names[object_id]
+            return {v: k for k, v in mujoco_config.ycb_objects.items()}[name]
+        glc = MocapGlanceController(YCBObjectController(id_mapping=id_mapping), mujoco_config.ycb_glance_area, 0.349066, mujoco_config.ycb_z_buffer)
     else:
         raise Exception("unsupported object set")
     return HapticExplorationSimEnv(glc)
@@ -201,10 +206,10 @@ def run_rl(save=True, init_pretrained=True, freeze_core=False, test=False):
             table_ac = ActorCritic(table_env, SHARED_ARCHITECTURE, model_spec, action_params, action_space, hyperparameters=hp)
             stats = table_ac.evaluate(eval_desc=f"TABLE EVAL (epoch {best_cp.i_epoch})", deterministic=True)
 
-            #sim_env = get_sim_env(OBJECT_SET)
-            #sim_env.verbose = True
-            #sim_ac = ActorCritic(sim_env, SHARED_ARCHITECTURE, model_spec, action_params, action_space, hyperparameters=hp)
-            #stats = sim_ac.evaluate(eval_desc=f"SIM EVAL (epoch {best_cp.i_epoch})")
+            sim_env = get_sim_env(OBJECT_SET)
+            sim_env.verbose = True
+            sim_ac = ActorCritic(sim_env, SHARED_ARCHITECTURE, model_spec, action_params, action_space, hyperparameters=hp)
+            stats = sim_ac.evaluate(eval_desc=f"SIM EVAL (epoch {best_cp.i_epoch})")
 
     else:
         if init_pretrained:
@@ -306,7 +311,7 @@ def main():
         raise Exception("invalid run type")
 
 
-RUN_TYPE = "train_cls"
+RUN_TYPE = "test_rl"
 OBJECT_SET = ObjectSet.YCB
 MODEL_TYPE = ModelType.Transformer
 RL_ACTION_TYPE = "hybrid"
