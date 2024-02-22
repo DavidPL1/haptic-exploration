@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="mujoco_plugin_config" default="$(find haptic_exploration)/config/exploration_panda_mjplugin_config.yaml"             doc="Location of param file containing the mujoco plugin config" />
+  <arg name="realtime" default="1.0" doc="Fraction of desired realtime (0,1]. -1 to run as fast as possible" />
+  <arg name="use_sim_time"         default="true" doc="should mujoco publish its simulation time as ros time?"/>
+  <arg name="show_rviz" default="false" />
+
+  <arg name="arm_id" default="panda" />
+
+  <arg name="headless" default="false" />
+  <arg name="unpause"  default="true" />
+  <arg name="no_x"     default="false" />
+  <arg name="verbose"  default="false" />
+
+  <arg name="show_surfaces" default="false" doc="Should the contact surfaces be shown?"/>
+  <arg name="show_cells"    default="false" doc="Should the tactile sensor cells be visualized?"/>
+  <arg name="num_splits"    default="4"    doc="Number of splits for processed object." />
+  <arg name="chunk"         default="0"    doc="Chunk of the set to process." />
+  <arg name="xacro_outpath" default="/tmp/$(env USER)_model.xml" />
+
+  <param name="/use_sim_time" value="true"/>
+
+  <include file="$(find franka_mujoco)/launch/panda.launch" pass_all_args="true">
+    <arg name="standalone" value="false" />
+    <arg name="sim_hw_file" value="$(find haptic_exploration)/config/panda_hw_config.yaml" />
+    <arg name="urdf" value="$(find haptic_exploration)/assets/xacro/panda_myrmex.urdf.xacro" />
+    <arg name="use_gripper" value="false" />
+    <arg name="controller" value="effort_joint_trajectory_controller" />
+  </include>
+
+  <param name="mujoco_xml"
+        command="xacro $(find haptic_exploration)/assets/xacro/generic_ycb_exploration.xml.xacro use_panda:=1 -o $(arg xacro_outpath)">
+  </param>
+
+  <include file="$(find mujoco_ros)/launch/launch_server.launch" pass_all_args="true" >
+    <arg name="console_config_file"  value="$(find mujoco_contact_surface_sensors)/rosconsole.config" />
+    <arg name="modelfile" value="$(arg xacro_outpath)" />
+    <arg name="initial_joint_states" value="$(find franka_mujoco)/config/initial_joint_states.yaml" />
+    <arg name="rviz" value="false" />
+  </include>
+
+  <arg name="venv" default="$(find haptic_exploration)/../../venv/bin/python3" />
+  <node name="ycb_recorder" pkg="haptic_exploration" type="test_panda" output="screen" launch-prefix = "$(arg venv)" >
+    <param name="show_surfaces" value="$(arg show_surfaces)" />
+    <param name="num_splits"    value="$(arg num_splits)" />
+    <param name="chunk"         value="$(arg chunk)" />
+    <param name="use_panda"     value="true" />
+  </node>
+
+</launch>

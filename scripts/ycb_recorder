@@ -17,6 +17,7 @@ from std_srvs.srv import Empty, EmptyRequest
 
 if __name__ == '__main__':
 
+    use_panda = rospy.get_param("/record_ycb_data/use_panda", 0)
     num_splits = rospy.get_param("/record_ycb_data/num_splits", 1)
     chunk = rospy.get_param("/record_ycb_data/chunk", 0)
     rospy.logwarn(f"num_splits: {num_splits}; chunk: {chunk}")
@@ -56,6 +57,6 @@ if __name__ == '__main__':
     rospy.logwarn(f"Objects handled by this run: {chosen_object_dict.values()}")
 
     sampling_config.object_dict = chosen_object_dict
-    sample_objects(sampling_config)
+    sample_objects(sampling_config, use_panda)
 
     rospy.ServiceProxy("/mujoco_server/shutdown", Empty)(EmptyRequest())

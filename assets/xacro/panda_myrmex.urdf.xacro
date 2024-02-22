@@ -1,0 +1,96 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="panda">
+
+  <xacro:include filename="$(find franka_description)/robots/common/franka_robot.xacro"/>
+  <xacro:include filename="$(find franka_description)/robots/common/utils.xacro" />
+  <xacro:include filename="$(find franka_description)/robots/common/franka_arm.xacro" />
+
+  <!-- Name for this robot -->
+  <xacro:arg name="arm_id" default="panda" />
+  <!-- Should a franka_gripper be mounted at the flange?" -->
+  <xacro:arg name="hand" default="false" />
+  <!-- Positional offset between $(arm_id)_hand -> $(arm_id)_hand_tcp [m]. Only used when hand:=true -->
+  <xacro:arg name="tcp_xyz" default="0 0 0.1034" />
+  <!-- Rotational offset between $(arm_id)_hand -> $(arm_id)_hand_tcp [rad]. Only used when hand:=true -->
+  <xacro:arg name="tcp_rpy" default="0 0 0" />
+
+  <!-- Is the robot being simulated?" -->
+  <xacro:arg name="gazebo" default="false" />
+  <!-- If `simulate` arg is set, to which frame shall $(arm_id)_link0 be parented. Empty string for not fixing at all -->
+  <xacro:arg name="parent" default="world" />
+  <!-- If `gazebo` arg is set and `parent` not empty, what position offset between `parent` & $(arm_id)_link0 -->
+
+  <xacro:franka_robot arm_id="$(arg arm_id)"
+                      joint_limits="${xacro.load_yaml('$(find franka_description)/robots/panda/joint_limits.yaml')}"
+                      hand="false"
+                      tcp_xyz="$(arg tcp_xyz)"
+                      tcp_rpy="$(arg tcp_rpy)"
+                      gazebo="$(arg gazebo)"
+                      parent="$(arg parent)"
+                      xyz="-0.5 0 0.08"
+                      rpy="0 0 0"
+                      >
+  </xacro:franka_robot>
+
+  <link name="myrmex_quick_mount">
+       <inertial>
+        <origin xyz="0 0 0.03" rpy="0 0 0" />
+        <mass value="0.180" />
+        <inertia ixx="0.0002" ixy="0.0" ixz="0.0"
+        iyy="0.0002" iyz="0.0" izz="0.0001" />
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh scale="0.001 0.001 0.001"
+                filename="package://haptic_exploration/assets/meshes/myrmex_quick_mount.stl"/>
+        </geometry>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0.00797" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="0.06725" length="0.01584"/>
+        </geometry>
+      </collision>
+      <collision>
+        <origin xyz="0 0 0.02159" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="0.060" length="0.0115"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="myrmex_fixed_joint" type="fixed">
+      <parent link="$(arg arm_id)_link8"/>
+      <child link="myrmex_quick_mount"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </joint>
+
+    <joint name="myrmex_bumper_joint" type="fixed">
+      <parent link="myrmex_quick_mount" />
+      <child link="myrmex_foam" />
+      <origin xyz="0 0 0.03034" rpy="0 0 0"/>
+    </joint>
+    
+    <link name="myrmex_foam">
+      <inertial>
+        <origin xyz="0 0 0.0" rpy="0 0 0" />
+        <mass value="0.180" />
+        <inertia ixx="0.000002" ixy="0.0" ixz="0.0"
+        iyy="0.000002" iyz="0.0" izz="0.000001" />
+      </inertial>
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.08 0.08 0.006"/>
+        </geometry>
+      </visual>
+      <collision name="myrmex_foam">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.08 0.08 0.006"/>
+        </geometry>
+      </collision>
+    </link>
+
+</robot>

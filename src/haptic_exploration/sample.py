@@ -16,7 +16,7 @@ from rospkg import RosPack
 
 from haptic_exploration.config import ObjectSet
 from haptic_exploration.util import GlanceAreaBB, deg2rad
-from haptic_exploration.glance_controller import MocapGlanceController
+from haptic_exploration.glance_controller import MocapGlanceController, PandaGlanceController
 from haptic_exploration.object_controller import get_object_controller
 from haptic_exploration.glance_parameters import GlanceParameters
 
@@ -41,8 +41,12 @@ def get_sampling_dir(sc: SamplingConfig):
     )
     return sampling_dir
 
-def sample_objects(sc: SamplingConfig):
-    glance_controller = MocapGlanceController(get_object_controller(sc.object_set), sc.glance_area, sc.max_angle, sc.z_clearance)
+def sample_objects(sc: SamplingConfig, use_panda=False):
+    if use_panda:
+        glance_controller = PandaGlanceController(get_object_controller(sc.object_set), sc.glance_area, sc.max_angle, sc.z_clearance)
+        time.sleep(1)
+    else:
+        glance_controller = MocapGlanceController(get_object_controller(sc.object_set), sc.glance_area, sc.max_angle, sc.z_clearance)
 
     names = [name for name, _ in sc.param_resolution]
     sampling_resolutions = [sampling_res for _, sampling_res in sc.param_resolution]

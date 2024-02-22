@@ -5,9 +5,11 @@
 	<xacro:arg name="visualize_surfaces" default="0" />
     <xacro:arg name="mesh_pos" default="0 0 0" />
     <xacro:arg name="mesh_rot" default="0 0 0" />
+    <xacro:arg name="use_panda" default="0" />
  
     <xacro:include filename="$(find haptic_exploration)/assets/xacro/object.xml.xacro" />
     <xacro:include filename="$(find haptic_exploration)/assets/xacro/myrmex_mocap.xml.xacro" />
+    <xacro:include filename="$(find haptic_exploration)/assets/xacro/panda_myrmex.xml.xacro" />
 
 	<compiler angle="radian" coordinate="local" texturedir="textures" />
 	<option timestep="0.001" cone="elliptic" jacobian="sparse" gravity="0 0 -9.81" />
@@ -63,5 +65,14 @@
 		</xacro:if>
 	</worldbody>
 
-	<xacro:myrmex_mocap />
+	<xacro:if value="$(arg use_panda)">
+	  <xacro:panda_assets />
+
+	  <worldbody>
+	    <xacro:panda_body pos="-0.5 0 0.08" />
+	  </worldbody>
+	</xacro:if>
+	<xacro:unless value="$(arg use_panda)" >	
+	  <xacro:myrmex_mocap />
+	</xacro:unless>
 </mujoco>

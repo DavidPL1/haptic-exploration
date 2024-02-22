@@ -45,6 +45,7 @@ catkin_install_python(PROGRAMS
   # scripts/sample_simple.py
   # scripts/sample_composite.py
   scripts/ycb_recorder
+  scripts/test_panda
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

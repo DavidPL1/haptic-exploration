@@ -110,7 +110,7 @@ class YCBObjectController(BaseObjectController):
         self.id_mapping = id_mapping
         self.current_object_id = None
 
-    def _build_model(self, object_id):
+    def _build_model(self, object_id, use_panda=False):
 
         if self.id_mapping is not None:
             object_id = self.id_mapping(object_id)
@@ -135,6 +135,7 @@ class YCBObjectController(BaseObjectController):
             visualize_surfaces=f'{int(show_surfaces)}',
             mesh_pos=' '.join(map(str, mesh_pos)),
             mesh_rot=' '.join(map(str, mesh_rot)),
+            use_panda=f'{int(use_panda)}',
         )
 
         outfile = osp.join(tempfile.gettempdir(), f'ycb_exploration_{getpass.getuser()}.xml')
@@ -145,8 +146,8 @@ class YCBObjectController(BaseObjectController):
             f.write(doc)
         return outfile
 
-    def set_object(self, object_id: int, mujoco_ros_client: MujocoRosClient):
-        model_filepath = self._build_model(object_id)
+    def set_object(self, object_id: int, mujoco_ros_client: MujocoRosClient, use_panda=False):
+        model_filepath = self._build_model(object_id, use_panda=use_panda)
         mujoco_ros_client.load_model(model_filepath)
         self.current_object_id = object_id
 

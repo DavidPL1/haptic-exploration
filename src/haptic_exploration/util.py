@@ -26,6 +26,7 @@ class Pose:
     
     def to_ros_pose(self) -> PoseStamped:
         pose_stamped = PoseStamped()
+        pose_stamped.header.frame_id = 'world'
         pos, ori = pose_stamped.pose.position, pose_stamped.pose.orientation
         pos.x, pos.y, pos.z = self.point
         ori.x, ori.y, ori.z, ori.w = self.orientation
