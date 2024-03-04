@@ -129,6 +129,7 @@ class YCBObjectController(BaseObjectController):
         mesh_path = f"{mujoco_config.ycb_objects[object_id]}/{mesh_type.value}/nontextured.stl"
         show_surfaces = rospy.get_param("~show_surfaces", False)
 
+        # TODO: pass object rotation
         arg_map = dict(
             use_object='1',
             mesh_subpath=mesh_path,

@@ -45,6 +45,10 @@ class GlanceAreaBB:
     y_limits: Tuple[float, float]
     z_limits: Tuple[float, float]
 
+    def __str__(self):
+        return f"(x=({self.x_min}, {self.x_max}) y=({self.y_min}, {self.y_max})"
+
+
 
 def rad2deg(rad):
     return rad / math.pi * 180

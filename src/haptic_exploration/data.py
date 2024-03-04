@@ -107,7 +107,8 @@ class GlanceTable:
             self.object_indices[object_id] = (x0, x1), (y0, y1)
             self.object_nonzero_total_count[object_id] = self.pressure_table[object_id].sum(axis=(3))
             self.object_nonzero_xy_count[object_id] = self.pressure_table[object_id].sum(axis=(2, 3))
-            print(f"{self.id_label[object_id]} indices: x={x0, x1}, y={y0, y1}, footprint={x1-x0, y1-y0}, nonzero_xy={(np.sum(self.object_nonzero_xy_count[object_id] > 0)/self.object_nonzero_xy_count[object_id].size*100):.2f}%")
+
+            print(f"{self.id_label[object_id]} indices: x={x0, x1}, y={y0, y1}, footprint={x1-x0+1, y1-y0+1}, nonzero_xy={(np.sum(self.object_nonzero_xy_count[object_id] > 0)/self.object_nonzero_xy_count[object_id].size*100):.2f}%")
 
     def _get_indices(self, params_normalized):
         return tuple(round(param_normalized * (param_resolution - 1)) for param_normalized, param_resolution in zip(params_normalized, self.param_resolution))

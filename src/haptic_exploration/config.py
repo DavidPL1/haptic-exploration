@@ -21,8 +21,12 @@ class ObjectSet(Enum):
     YCB = "ycb"
 
 
-#object_dir = Path(RosPack().get_path("haptic_exploration"), "datasets")
-object_dir = Path("../datasets/")
+try:
+    base_dir = Path(RosPack().get_path("haptic_exploration"))
+except:
+    base_dir = ".."
+
+object_dir = base_dir / "datasets"
 OBJECT_PATHS = {
     ObjectSet.Basic: object_dir / "basic_61x61",
     ObjectSet.Composite: object_dir / "composite_61x61",

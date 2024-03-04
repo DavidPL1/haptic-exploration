@@ -11,6 +11,7 @@ import os.path as osp
 from haptic_exploration import mujoco_config
 from haptic_exploration.config import ObjectSet
 from haptic_exploration.sample import sample_objects, SamplingConfig, get_sampling_dir
+from haptic_exploration.data import GlanceTable
 from haptic_exploration.util import deg2rad
 
 from std_srvs.srv import Empty, EmptyRequest
@@ -32,12 +33,17 @@ if __name__ == '__main__':
     sampling_config = SamplingConfig(
         ObjectSet.YCB,
         dict(),
-        [("x", 21), ("y", 16), ("x_angle", 41)],
+        [("x", 21), ("y", 16), ("x_angle", 5), ("y_angle", 5)],
         mujoco_config.ycb_glance_area,
         deg2rad(20),
         mujoco_config.ycb_z_buffer,
+        deg2rad(10)
     )
-    
+
+    # convert index footprints to meter
+    scale = 2e-2
+    footprints = {object_idx: (((x0-10)*scale, (x1-10)*scale), ((y0-7.5)*scale, (y1-7.5)*scale)) for object_idx, ((x0, x1), (y0, y1)) in GlanceTable(ObjectSet.YCB).object_indices.items()}
+
     # Check already sampled objects for this config
     already_sampled = [f.stem for f in get_sampling_dir(sampling_config).glob('*.pkl')]
     rospy.logwarn(f"already_sampled: {already_sampled}")
@@ -57,6 +63,6 @@ if __name__ == '__main__':
     rospy.logwarn(f"Objects handled by this run: {chosen_object_dict.values()}")
 
     sampling_config.object_dict = chosen_object_dict
-    sample_objects(sampling_config, use_panda)
+    sample_objects(sampling_config, use_panda, footprints=footprints)
 
     rospy.ServiceProxy("/mujoco_server/shutdown", Empty)(EmptyRequest())
