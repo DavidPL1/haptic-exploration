@@ -8,6 +8,7 @@ import getpass
 import numpy as np
 from typing import Union, List
 from copy import deepcopy
+import tf.transformations as tft
 
 import haptic_exploration.mujoco_config as mujoco_config
 from haptic_exploration.config import ObjectSet
@@ -120,6 +121,18 @@ class YCBObjectController(BaseObjectController):
                 object_rotation[["x", "y", "z"].index(dim_name)] = rot
         mesh_rot = object_rotation / 180 * np.pi
 
+        # TODO: figure out final z-axis rotation
+        print("ORIGINAL", mesh_rot)
+        rotation = np.pi/2
+
+        Rx = tft.rotation_matrix(mesh_rot[0], [1, 0, 0])
+        Ry = tft.rotation_matrix(mesh_rot[1], [0, 1, 0])
+        Rz = tft.rotation_matrix(mesh_rot[2], [0, 0, 1])
+        Rz2 = tft.rotation_matrix(rotation, [0, 0, 1])
+        R = tft.concatenate_matrices(Rx, Ry, Rz, Rz2)
+        mesh_rot = tft.euler_from_matrix(R, 'rxyz')
+        print("WITH OFFSET:", mesh_rot)
+
         mesh_pos = np.array([0, 0, 0.03])
         if object_id in mujoco_config.ycb_objects_custom_position:
             mesh_pos += np.array(mujoco_config.ycb_objects_custom_position[object_id])
@@ -128,7 +141,6 @@ class YCBObjectController(BaseObjectController):
         mesh_path = f"{mujoco_config.ycb_objects[object_id]}/{mesh_type.value}/nontextured.stl"
         show_surfaces = rospy.get_param("~show_surfaces", False)
 
-        # TODO: pass object rotation
         arg_map = dict(
             use_object='1',
             mesh_subpath=mesh_path,

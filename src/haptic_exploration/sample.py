@@ -61,8 +61,8 @@ def sample_objects(sc: SamplingConfig, use_panda=False, footprints=None, myrmex_
 
     limits = [sc.glance_area.x_limits, sc.glance_area.y_limits] + [(-sc.max_angle, sc.max_angle)] * (len(names) - 2)
     dim_values = [list(zip(np.arange(sampling_res), np.linspace(limit_low, limit_high, sampling_res), np.linspace(0, 1, sampling_res))) for sampling_res, (limit_low, limit_high) in zip(sampling_resolutions, limits)]
-    param_spec = [(name, [v[1] for v in values]) for name, values in zip(names, dim_values)] # TODO: v[1] instead of v[2] for scaled values
-    sensor_diff = 0.05  # adjust for smaller myrmex sensor (2x2cm) as footprints are calculated for 10x10cm sensor
+    param_spec = [(name, [v[1] for v in values]) for name, values in zip(names, dim_values)]
+    sensor_diff = 0.02  # adjust for smaller myrmex sensor (2x2cm) as footprints are calculated for 10x10cm sensor
     object_radii = {object_name: max(-x0, x1, -y0, y1) - sensor_diff for object_name, ((x0, x1), (y0, y1)) in footprints.items()}
     error = 1e-5
 
