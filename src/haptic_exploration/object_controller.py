@@ -30,7 +30,6 @@ class BaseObjectController:
         raise NotImplementedError()
 
 
-
 class SimpleObjectController(BaseObjectController):
 
     def __init__(self):
@@ -110,7 +109,7 @@ class YCBObjectController(BaseObjectController):
         self.id_mapping = id_mapping
         self.current_object_id = None
 
-    def _build_model(self, object_id, use_panda=False):
+    def _build_model(self, object_id, rotation, use_panda=False):
 
         if self.id_mapping is not None:
             object_id = self.id_mapping(object_id)
@@ -147,8 +146,8 @@ class YCBObjectController(BaseObjectController):
             f.write(doc)
         return outfile
 
-    def set_object(self, object_id: int, mujoco_ros_client: MujocoRosClient, use_panda=False):
-        model_filepath = self._build_model(object_id, use_panda=use_panda)
+    def set_object(self, object_id: int, mujoco_ros_client: MujocoRosClient, use_panda=False, rotation=0):
+        model_filepath = self._build_model(object_id, rotation, use_panda=use_panda)
         mujoco_ros_client.load_model(model_filepath)
         self.current_object_id = object_id
 

@@ -7,13 +7,14 @@ from haptic_exploration.util import Pose, GlanceAreaBB
 MYRMEX_BODY = "myrmex_body"
 MYRMEX_MOCAP_BODY = "myrmex_mocap_body"
 
+mocap_velocity = 0.1
 
-glance_sum_pressure_threshold = 6000
-glance_cell_pressure_threshold = 2000
-glance_velocity_threshold = 0.001
+glance_sum_pressure_threshold = 15000
+glance_cell_pressure_threshold = 5000
+glance_pressure_count = 5
+glance_velocity_threshold = 0.04
 glance_velocity_threshold_count = 15
 glance_mocap_distance_threshold = 0.03
-mocap_velocity = 0.1
 
 
 ### SIMPLE SIM CONFIG ###

@@ -14,12 +14,18 @@ class GlancePressureMonitor:
         self.max_values = np.zeros((64,))
         self.max_values_sum = 0
         self.max_values_pose = None
+        self.pressure_counter = 0
         self.velocity_counter = 0
     
     def add(self, values, pose_linvel, mocap_pose) -> bool:
         pose, linvel = pose_linvel
         values_sum = values.sum()
         max_cell_value = values.max()
+
+        if values_sum > 0:
+            self.pressure_counter += 1
+        else:
+            self.pressure_counter = 0
 
         if values_sum >= self.max_values_sum:
             self.max_values = values
@@ -31,11 +37,12 @@ class GlancePressureMonitor:
         else:
             self.velocity_counter = 0
 
+        c0 = self.pressure_counter >= mujoco_config.glance_pressure_count
         c1 = values_sum > mujoco_config.glance_sum_pressure_threshold
         c2 = max_cell_value > mujoco_config.glance_cell_pressure_threshold
-        c3 = self.velocity_counter > mujoco_config.glance_velocity_threshold_count
+        c3 = self.velocity_counter >= mujoco_config.glance_velocity_threshold_count
         c4 = np.linalg.norm(pose.point - mocap_pose.point) > mujoco_config.glance_mocap_distance_threshold
-        return c1 or c2 or c3 or c4
+        return c0 or c1 or c2 or c3 or c4
 
 
 class MocapGlanceController(MujocoRosClient):
@@ -48,16 +55,16 @@ class MocapGlanceController(MujocoRosClient):
         self.max_angle = max_angle
         self.z_clearance = z_clearance
 
-    def set_object(self, object_id):
+    def set_object(self, object_id, rotation=0):
         if object_id is None or object_id < 0:
             self.object_controller.clear_object(self)
         else:
-            self.object_controller.set_object(object_id, self)
+            self.object_controller.set_object(object_id, self, rotation=rotation)
 
     def clear_object(self):
         self.object_controller.clear_object(self)
 
-    def perform_glance(self, glance_params: GlanceParameters, rt=False):
+    def perform_glance(self, glance_params: GlanceParameters, rt=True):
 
         sim_step_size = 30
         fps_timer = FPSTimer(1000/sim_step_size) if rt else None

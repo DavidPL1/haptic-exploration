@@ -6,6 +6,7 @@ import functools
 import itertools
 import pickle
 from pathlib import Path
+from math import sqrt
 
 import rospy.rostime
 from tqdm import tqdm
@@ -44,7 +45,7 @@ def get_sampling_dir(sc: SamplingConfig):
     return sampling_dir
 
 
-def sample_objects(sc: SamplingConfig, use_panda=False, footprints=None):
+def sample_objects(sc: SamplingConfig, use_panda=False, footprints=None, myrmex_dim=16):
     if use_panda:
         glance_controller = PandaGlanceController(get_object_controller(sc.object_set), sc.glance_area, sc.max_angle, sc.z_clearance)
         time.sleep(1)
@@ -61,15 +62,16 @@ def sample_objects(sc: SamplingConfig, use_panda=False, footprints=None):
     limits = [sc.glance_area.x_limits, sc.glance_area.y_limits] + [(-sc.max_angle, sc.max_angle)] * (len(names) - 2)
     dim_values = [list(zip(np.arange(sampling_res), np.linspace(limit_low, limit_high, sampling_res), np.linspace(0, 1, sampling_res))) for sampling_res, (limit_low, limit_high) in zip(sampling_resolutions, limits)]
     param_spec = [(name, [v[1] for v in values]) for name, values in zip(names, dim_values)] # TODO: v[1] instead of v[2] for scaled values
-    object_radii = {object_id: max(-x0, x1, -y0, y1) for object_id, ((x0, x1), (y0, y1)) in footprints.items()}
+    sensor_diff = 0.05  # adjust for smaller myrmex sensor (2x2cm) as footprints are calculated for 10x10cm sensor
+    object_radii = {object_name: max(-x0, x1, -y0, y1) - sensor_diff for object_name, ((x0, x1), (y0, y1)) in footprints.items()}
     error = 1e-5
 
     rotations = np.linspace(0, deg2rad(90), round(deg2rad(90) / sc.object_rotation_delta + 1)) if sc.object_rotation_delta > 0 else [0]
 
     if footprints is not None:
         print("Footprints:")
-        for object_index, footprint in footprints.items():
-            print(f"Object {object_index}: indices {footprint}, radius {object_radii[object_index]}")
+        for object_name, footprint in footprints.items():
+            print(f"Object {object_name}: indices {footprint}, radius {object_radii[object_name]}")
 
     if not glance_controller.wait_for_sim():
         rospy.logerr("Model could not be loaded!")
@@ -80,13 +82,12 @@ def sample_objects(sc: SamplingConfig, use_panda=False, footprints=None):
         for i, (object_index, object_name) in enumerate(sorted(sc.object_dict.items(), key=lambda e: e[0])):
             pbar.set_description(f"Sampling {len(sc.object_dict)} objects with resolution {sampling_resolutions_str}")
 
-            object_radius = object_radii[object_index]
+            object_radius = object_radii[object_name]
             for rotation_idx, rotation in enumerate(rotations):
 
-                # TODO: set rotation here
-                glance_controller.set_object(object_index)
+                glance_controller.set_object(object_index, rotation=rotation)
 
-                object_pressure_table = np.zeros([len(rotations)] + sampling_resolutions + [256], dtype=float)
+                object_pressure_table = np.zeros([len(rotations)] + sampling_resolutions + [myrmex_dim], dtype=float)
                 object_position_table = np.zeros([len(rotations)] + sampling_resolutions + [7], dtype=float)
 
                 print("SHAPE", object_pressure_table.shape)
@@ -94,13 +95,9 @@ def sample_objects(sc: SamplingConfig, use_panda=False, footprints=None):
                 for arg_spec in itertools.product(*dim_values):
                     indices, values, value_factors = zip(*arg_spec)
 
-
-                    # TODO: discuss this -> we assume objects are aligned according to x-axis
-
-                    # everything in meter
                     x, y = values[:2]
-
-                    if not (abs(x) <= object_radius + error and abs(y) <= object_radius + error):
+                    dist = max(abs(x), abs(y))
+                    if not (dist <= object_radius + error):
                         continue
 
                     pbar.set_postfix_str(f"{rotation_idx} {rotation:.3f} {object_name} ({i+1}/{len(sc.object_dict)}), " + ", ".join(f'{name}={value:.3f}' for name, value in zip(names, values)))
@@ -112,6 +109,13 @@ def sample_objects(sc: SamplingConfig, use_panda=False, footprints=None):
                     object_position_table[(rotation_idx,) + tuple(indices)] = np.concatenate([pose.point, pose.orientation])
                     pbar.update()
 
+                    if np.sum(max_values) == 0:
+                        print("ZERO")
+                    else:
+                        print("NONZERO:")
+                        dim = int(sqrt(max_values.shape[0]))
+                        print(np.reshape(max_values, (dim, dim)))
+
                 with open(sampling_dir / f"{object_name}.pkl", "wb") as file:
-                    object_data = object_name, param_spec, object_pressure_table, object_position_table, sc
+                    object_data = object_name, param_spec, object_pressure_table, object_position_table, sc, object_radii
                     pickle.dump(object_data, file)
