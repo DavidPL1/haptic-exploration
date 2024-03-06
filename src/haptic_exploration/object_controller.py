@@ -121,18 +121,6 @@ class YCBObjectController(BaseObjectController):
                 object_rotation[["x", "y", "z"].index(dim_name)] = rot
         mesh_rot = object_rotation / 180 * np.pi
 
-        # TODO: figure out final z-axis rotation
-        print("ORIGINAL", mesh_rot)
-        rotation = np.pi/2
-
-        Rx = tft.rotation_matrix(mesh_rot[0], [1, 0, 0])
-        Ry = tft.rotation_matrix(mesh_rot[1], [0, 1, 0])
-        Rz = tft.rotation_matrix(mesh_rot[2], [0, 0, 1])
-        Rz2 = tft.rotation_matrix(rotation, [0, 0, 1])
-        R = tft.concatenate_matrices(Rx, Ry, Rz, Rz2)
-        mesh_rot = tft.euler_from_matrix(R, 'rxyz')
-        print("WITH OFFSET:", mesh_rot)
-
         mesh_pos = np.array([0, 0, 0.03])
         if object_id in mujoco_config.ycb_objects_custom_position:
             mesh_pos += np.array(mujoco_config.ycb_objects_custom_position[object_id])
@@ -147,6 +135,7 @@ class YCBObjectController(BaseObjectController):
             visualize_surfaces=f'{int(show_surfaces)}',
             mesh_pos=' '.join(map(str, mesh_pos)),
             mesh_rot=' '.join(map(str, mesh_rot)),
+            mesh_theta=str(rotation),
             use_panda=f'{int(use_panda)}',
         )
 

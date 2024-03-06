@@ -33,8 +33,7 @@ if __name__ == '__main__':
     sampling_config = SamplingConfig(
         ObjectSet.YCB,
         dict(),
-        # TODO: correct sampling spec: [("x", 41), ("y", 31)],
-        [("x", 3), ("y", 3)],
+        [("x", 41), ("y", 31)],
         mujoco_config.ycb_glance_area,
         deg2rad(20),
         mujoco_config.ycb_z_buffer,
@@ -62,9 +61,6 @@ if __name__ == '__main__':
         chosen_object_dict = {id: mujoco_config.ycb_objects[id] for id in chosen_object_ids}
     else:
         chosen_object_dict = {id: mujoco_config.ycb_objects[id] for id in available_objects}
-
-    # TODO: remove
-    chosen_object_dict = {15: "015_peach"}
 
     rospy.logwarn(f"Objects handled by this run: {chosen_object_dict.values()}")
 

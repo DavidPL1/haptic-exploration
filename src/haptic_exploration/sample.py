@@ -90,8 +90,6 @@ def sample_objects(sc: SamplingConfig, use_panda=False, footprints=None, myrmex_
                 object_pressure_table = np.zeros([len(rotations)] + sampling_resolutions + [myrmex_dim], dtype=float)
                 object_position_table = np.zeros([len(rotations)] + sampling_resolutions + [7], dtype=float)
 
-                print("SHAPE", object_pressure_table.shape)
-
                 for arg_spec in itertools.product(*dim_values):
                     indices, values, value_factors = zip(*arg_spec)
 
@@ -108,13 +106,6 @@ def sample_objects(sc: SamplingConfig, use_panda=False, footprints=None, myrmex_
                     object_pressure_table[(rotation_idx,) + tuple(indices)] = max_values
                     object_position_table[(rotation_idx,) + tuple(indices)] = np.concatenate([pose.point, pose.orientation])
                     pbar.update()
-
-                    if np.sum(max_values) == 0:
-                        print("ZERO")
-                    else:
-                        print("NONZERO:")
-                        dim = int(sqrt(max_values.shape[0]))
-                        print(np.reshape(max_values, (dim, dim)))
 
                 with open(sampling_dir / f"{object_name}.pkl", "wb") as file:
                     object_data = object_name, param_spec, object_pressure_table, object_position_table, sc, object_radii
