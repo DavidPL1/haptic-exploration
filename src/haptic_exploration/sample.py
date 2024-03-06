@@ -77,7 +77,7 @@ def sample_objects(sc: SamplingConfig, use_panda=False, footprints=None, myrmex_
         rospy.logerr("Model could not be loaded!")
         sys.exit(-1)
 
-    with tqdm(total=len(sc.object_dict)*functools.reduce(lambda a, b: a*b, sampling_resolutions)) as pbar:
+    with tqdm(total=len(sc.object_dict)*functools.reduce(lambda a, b: a*b, sampling_resolutions)*len(rotations)) as pbar:
 
         for i, (object_index, object_name) in enumerate(sorted(sc.object_dict.items(), key=lambda e: e[0])):
             pbar.set_description(f"Sampling {len(sc.object_dict)} objects with resolution {sampling_resolutions_str}")
@@ -98,7 +98,8 @@ def sample_objects(sc: SamplingConfig, use_panda=False, footprints=None, myrmex_
                     if not (dist <= object_radius + error):
                         continue
 
-                    pbar.set_postfix_str(f"{rotation_idx} {rotation:.3f} {object_name} ({i+1}/{len(sc.object_dict)}), " + ", ".join(f'{name}={value:.3f}' for name, value in zip(names, values)))
+                    rotation_deg = rotation * 180 / np.pi
+                    pbar.set_postfix_str(f"{object_name} ({i+1}/{len(sc.object_dict)}), theta={rotation_deg:.2f} ({rotation_idx+1}/{len(rotations)-1}) " + ", ".join(f'{name}={value:.3f}' for name, value in zip(names, values)))
 
                     glance_kwargs = {f"{name}_factor": v_factor for name, v_factor in zip(names, value_factors)}
                     glance_params = GlanceParameters(**glance_kwargs)
