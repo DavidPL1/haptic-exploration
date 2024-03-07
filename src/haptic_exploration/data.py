@@ -63,9 +63,12 @@ class GlanceTable:
             # TODO: adjust next stuff according to cropped tables
         self.n_params = len(param_spec)
         self.param_names = [name for name, _ in param_spec]
-        self.param_values = [values for _, values in param_spec]
-        self.param_ranges = [(min(values), max(values)) for values in self.param_values]
-        self.param_resolution = [len(values) for _, values in param_spec]
+        # self.param_values = [values for _, values in param_spec]
+        # self.param_ranges = [(min(values), max(values)) for values in self.param_values]
+        if "rot" in object_set.value:
+            self.param_resolution = pressure_table0.shape[1:self.n_params+1]
+        else:
+            self.param_resolution = [len(values) for _, values in param_spec]
 
         # handle rotation
         if "rot" in object_set.value:
@@ -94,8 +97,13 @@ class GlanceTable:
                 object_pressure_table = empty_pressure_table.copy()
                 object_position_table = empty_position_table.copy()
 
-                object_pressure_table += np.multiply(object_pressure_table_footprint, footprint_mask)
-                object_position_table += np.multiply(object_position_table_footprint, footprint_mask)
+                footprint_pressure_mask = np.repeat(np.expand_dims(footprint_mask, -1), object_pressure_table.shape[-1], axis=3)
+                footprint_position_mask = np.repeat(np.expand_dims(footprint_mask, -1), object_position_table.shape[-1], axis=3)
+                object_pressure_table -= np.multiply(object_pressure_table, footprint_pressure_mask)
+                object_position_table -= np.multiply(object_position_table, footprint_position_mask)
+
+                object_pressure_table += np.multiply(object_pressure_table_footprint, footprint_pressure_mask)
+                object_position_table += np.multiply(object_position_table_footprint, footprint_position_mask)
 
                 self.pressure_table[object_id, :n_rotations_quarter] = object_pressure_table
                 self.position_table[object_id, :n_rotations_quarter] = object_position_table
@@ -127,8 +135,6 @@ class GlanceTable:
                     reshaped_xy_rotated = flattened_xy_rotated.reshape(*object_position_table.shape[:3], 2)
                     self.position_table[object_id, quarter_start:quarter_end, :, :, :2] = reshaped_xy_rotated
 
-            pass
-
         else:
             self.rot = False
 
@@ -158,16 +164,21 @@ class GlanceTable:
 
                 print(f"{self.id_label[object_id]} indices: x={x0, x1}, y={y0, y1}, footprint={x1-x0+1, y1-y0+1}, nonzero_xy={(np.sum(self.object_nonzero_xy_count[object_id] > 0)/self.object_nonzero_xy_count[object_id].size*100):.2f}%")
 
+    def _get_rotation_index(self, rotation):
+        rotation_idx = round(rotation/(2*np.pi) * self.n_rotations)
+        rotation_idx = rotation_idx % self.n_rotations
+        return rotation_idx
+
     def _get_indices(self, params_normalized):
         return tuple(round(param_normalized * (param_resolution - 1)) for param_normalized, param_resolution in zip(params_normalized, self.param_resolution))
 
-    def get_pressure_position(self, object_id, params_normalized, zero_centered=False, add_noise=False, offset=(0, 0)):
+    def get_pressure_position(self, object_id, params_normalized, zero_centered=False, add_noise=False, offset=(0, 0), rotation=0):
         if zero_centered:
             params_normalized = [(param+1)/2 for param in params_normalized]
         indices = self._get_indices(params_normalized)
-        return self.get_pressure_position_indices(object_id, indices, add_noise=add_noise, offset=offset)
+        return self.get_pressure_position_indices(object_id, indices, add_noise=add_noise, offset=offset, rotation=rotation)
 
-    def get_pressure_position_indices(self, object_id, indices, add_noise=False, offset=(0, 0)):
+    def get_pressure_position_indices(self, object_id, indices, add_noise=False, offset=(0, 0), rotation=0):
 
         indices1 = [idx-idx_o for idx, idx_o in zip(indices, offset)] + list(indices[len(offset):])
         boundary_offset = np.zeros(2, dtype=int)
@@ -181,7 +192,11 @@ class GlanceTable:
 
         position_offset = np.array([(idx_o - idx_b) * (1/(res-1)) for idx_o, idx_b, res in zip(offset, boundary_offset, self.param_resolution)])
 
-        indices2 = (object_id,) + indices2
+        if "rot" in self.object_set.value:
+            rotation_idx = self._get_rotation_index(rotation)
+            indices2 = (object_id, rotation_idx) + indices2
+        else:
+            indices2 = (object_id,) + indices2
         pressure = self.pressure_table[indices2].copy()
         position = self.position_table[indices2].copy()
         position[:position_offset.shape[0]] += position_offset
@@ -189,10 +204,12 @@ class GlanceTable:
             position = apply_position_noise(position, self.glance_area, TRANSLATION_STD_M, ROTATION_STD_DEG)
         return pressure, position
 
+    """
     def get_params(self, params_normalized):
         exact_params = tuple(self.param_values[param][param_idx] for param, param_idx in enumerate(self._get_indices(params_normalized)))
         table_params = tuple(param_min + (param_max - param_min) * param_normalized for param_normalized, (param_min, param_max) in zip(params_normalized, self.param_ranges))
         return exact_params, table_params
+    """
 
     def generate_offset(self, object_id):
         max_x, max_y = self.param_resolution[:2]
