@@ -271,3 +271,8 @@ def print_pressure(pressure_values, print_values=False, glance_params=None):
             print(c, end="")
         print(" # ")
     print(" # " * (pressure_values_2D.shape[0]+2))
+
+
+def rotation_matrix_2d(angle):
+    c, s = np.cos(angle), np.sin(angle)
+    return np.array(((c, -s), (s, c)))

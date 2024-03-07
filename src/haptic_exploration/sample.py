@@ -82,13 +82,13 @@ def sample_objects(sc: SamplingConfig, use_panda=False, footprints=None, myrmex_
         for i, (object_index, object_name) in enumerate(sorted(sc.object_dict.items(), key=lambda e: e[0])):
             pbar.set_description(f"Sampling {len(sc.object_dict)} objects with resolution {sampling_resolutions_str}")
 
-            object_radius = object_radii[object_name]
+            object_pressure_table = np.zeros([len(rotations)] + sampling_resolutions + [myrmex_dim], dtype=float)
+            object_position_table = np.zeros([len(rotations)] + sampling_resolutions + [7], dtype=float)
+
+            object_radius = object_radii[object_name] if object_name in object_radii else 100
             for rotation_idx, rotation in enumerate(rotations):
 
                 glance_controller.set_object(object_index, rotation=rotation)
-
-                object_pressure_table = np.zeros([len(rotations)] + sampling_resolutions + [myrmex_dim], dtype=float)
-                object_position_table = np.zeros([len(rotations)] + sampling_resolutions + [7], dtype=float)
 
                 for arg_spec in itertools.product(*dim_values):
                     indices, values, value_factors = zip(*arg_spec)
