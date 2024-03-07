@@ -37,7 +37,7 @@ if __name__ == '__main__':
         mujoco_config.ycb_glance_area,
         deg2rad(20),
         mujoco_config.ycb_z_buffer,
-        deg2rad(10)
+        deg2rad(5)
     )
 
     # convert index footprints to meter

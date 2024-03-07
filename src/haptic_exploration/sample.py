@@ -66,7 +66,7 @@ def sample_objects(sc: SamplingConfig, use_panda=False, footprints=None, myrmex_
     object_radii = {object_name: max(-x0, x1, -y0, y1) - sensor_diff for object_name, ((x0, x1), (y0, y1)) in footprints.items()}
     error = 1e-5
 
-    rotations = np.linspace(0, deg2rad(90), round(deg2rad(90) / sc.object_rotation_delta + 1)) if sc.object_rotation_delta > 0 else [0]
+    rotations = np.linspace(0, deg2rad(90), round(deg2rad(90) / sc.object_rotation_delta + 1))[:-1] if sc.object_rotation_delta > 0 else [0]
 
     if footprints is not None:
         print("Footprints:")
@@ -94,12 +94,13 @@ def sample_objects(sc: SamplingConfig, use_panda=False, footprints=None, myrmex_
                     indices, values, value_factors = zip(*arg_spec)
 
                     x, y = values[:2]
-                    dist = max(abs(x), abs(y))
+                    dist = np.linalg.norm(np.array([x, y]))
                     if not (dist <= object_radius + error):
+                        pbar.update()
                         continue
 
                     rotation_deg = rotation * 180 / np.pi
-                    pbar.set_postfix_str(f"{object_name} ({i+1}/{len(sc.object_dict)}), theta={rotation_deg:.2f} ({rotation_idx+1}/{len(rotations)-1}) " + ", ".join(f'{name}={value:.3f}' for name, value in zip(names, values)))
+                    pbar.set_postfix_str(f"{object_name} ({i+1}/{len(sc.object_dict)}), theta={rotation_deg:.2f} ({rotation_idx+1}/{len(rotations)}) " + ", ".join(f'{name}={value:.3f}' for name, value in zip(names, values)))
 
                     glance_kwargs = {f"{name}_factor": v_factor for name, v_factor in zip(names, value_factors)}
                     glance_params = GlanceParameters(**glance_kwargs)
@@ -108,6 +109,10 @@ def sample_objects(sc: SamplingConfig, use_panda=False, footprints=None, myrmex_
                     object_position_table[(rotation_idx,) + tuple(indices)] = np.concatenate([pose.point, pose.orientation])
                     pbar.update()
 
-                with open(sampling_dir / f"{object_name}.pkl", "wb") as file:
+                with open(sampling_dir / f"{object_name}_rot_{rotation_idx}.pkl", "wb") as file:
                     object_data = object_name, param_spec, object_pressure_table, object_position_table, sc, object_radii
                     pickle.dump(object_data, file)
+
+            with open(sampling_dir / f"{object_name}.pkl", "wb") as file:
+                object_data = object_name, param_spec, object_pressure_table, object_position_table, sc, object_radii
+                pickle.dump(object_data, file)
