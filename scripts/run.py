@@ -42,7 +42,8 @@ RL_BATCH_SIZE = 1
 NUM_RL_EPOCHS = {
     ObjectSet.Basic: 25,
     ObjectSet.Composite: 200,
-    ObjectSet.YCB: 500
+    ObjectSet.YCB: 500,
+    ObjectSet.YCB_rot: 200
 }
 NUM_RL_EPISODES = 1000
 RL_STORE_WEIGHT_INTERVAL = 20
@@ -65,7 +66,7 @@ def get_sim_env(object_set):
         glc = MocapGlanceController(SimpleObjectController(), mujoco_config.basic_objects_glance_area)
     elif object_set == ObjectSet.Composite:
         glc = MocapGlanceController(CompositeObjectController(mujoco_config.composite_objects), mujoco_config.composite_glance_area)
-    elif object_set == ObjectSet.YCB:
+    elif object_set in (ObjectSet.YCB, ObjectSet.YCB_rot):
         def id_mapping(object_id):
             name = mujoco_config.ycb_names[object_id]
             return {v: k for k, v in mujoco_config.ycb_objects.items()}[name]
@@ -311,8 +312,8 @@ def main():
         raise Exception("invalid run type")
 
 
-RUN_TYPE = "train_rl"
-OBJECT_SET = ObjectSet.YCB
+RUN_TYPE = "train_cls"
+OBJECT_SET = ObjectSet.YCB_rot
 MODEL_TYPE = ModelType.Transformer
 RL_ACTION_TYPE = "hybrid"
 SHARED_ARCHITECTURE = True

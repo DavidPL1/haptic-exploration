@@ -2,7 +2,7 @@
 
     <xacro:macro name="myrmex_mocap" >
         <asset>
-            <mesh name="myrmex_quick_mount_visual" file="$(find haptic_exploration)/assets/meshes/myrmex_quick_mount.stl" scale="0.001 0.001 0.001" />
+            <mesh name="myrmex_quick_mount_visual" file="$(find haptic_exploration)/assets/meshes/myrmex_quick_mount.stl" scale="0.00025 0.00025 0.00025" />
         </asset>
 
         <worldbody>
@@ -12,14 +12,14 @@
 
             <body name="myrmex_body" pos="0 0 0.56" quat="0 1 0 0">
                 <freejoint/>
-                <body name="myrmex_quick_mount" pos="0 0 -0.03034">
+                <body name="myrmex_quick_mount" pos="0 0 -0.0054">
 
                     <inertial pos="0 0 0.03" mass="0.005" diaginertia="0.0002 0.0002 0.0001" />
                     <geom type="mesh" mesh="myrmex_quick_mount_visual" contype="0" conaffinity="0" mass="0" />
 
-                    <body name="myrmex_foam_body" pos="0 0 0.03034" euler="0 0 0">
+                    <body name="myrmex_foam_body" pos="0 0 0.0054" euler="0 0 0">
                         <inertial pos="0 0 0" mass="0.005" diaginertia="2e-06 2e-06 1e-06"/>
-                        <geom name="myrmex_foam" type="box" pos="0 0 0" size="0.04 0.04 0.003" rgba="0.5 0.5 0.5 0.5" contype="1" conaffinity="1"/>
+                        <geom name="myrmex_foam" type="box" pos="0 0 0" size="0.01 0.01 0.003" rgba="0.5 0.5 0.5 0.5" contype="1" conaffinity="1"/>
                     </body>
                 </body>
             </body>

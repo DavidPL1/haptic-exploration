@@ -33,22 +33,24 @@ if __name__ == '__main__':
     sampling_config = SamplingConfig(
         ObjectSet.YCB,
         dict(),
-        [("x", 21), ("y", 16), ("x_angle", 5), ("y_angle", 5)],
+        [("x", 41), ("y", 31)],
         mujoco_config.ycb_glance_area,
         deg2rad(20),
         mujoco_config.ycb_z_buffer,
-        deg2rad(10)
+        deg2rad(5)
     )
 
     # convert index footprints to meter
     scale = 2e-2
-    footprints = {object_idx: (((x0-10)*scale, (x1-10)*scale), ((y0-7.5)*scale, (y1-7.5)*scale)) for object_idx, ((x0, x1), (y0, y1)) in GlanceTable(ObjectSet.YCB).object_indices.items()}
+    glance_table = GlanceTable(ObjectSet.YCB)
+    footprints = {glance_table.id_label[object_idx]: (((x0-10)*scale, (x1-10)*scale), ((y0-7.5)*scale, (y1-7.5)*scale)) for object_idx, ((x0, x1), (y0, y1)) in glance_table.object_indices.items()}
 
     # Check already sampled objects for this config
     already_sampled = [f.stem for f in get_sampling_dir(sampling_config).glob('*.pkl')]
     rospy.logwarn(f"already_sampled: {already_sampled}")
 
     available_objects = [obj for obj in available_objects if obj not in already_sampled]
+    available_objects = [object_name for object_name in available_objects if object_name in footprints.keys()]
 
     rospy.logwarn(f"Filtered objects: {available_objects}")
     available_objects = [list(mujoco_config.ycb_objects.keys())[list(mujoco_config.ycb_objects.values()).index(x)] for x in available_objects]

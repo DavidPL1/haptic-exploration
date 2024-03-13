@@ -5,6 +5,7 @@
 	<xacro:arg name="visualize_surfaces" default="0" />
     <xacro:arg name="mesh_pos" default="0 0 0" />
     <xacro:arg name="mesh_rot" default="0 0 0" />
+    <xacro:arg name="mesh_theta" default="0" />
     <xacro:arg name="use_panda" default="0" />
  
     <xacro:include filename="$(find haptic_exploration)/assets/xacro/object.xml.xacro" />
@@ -61,7 +62,7 @@
 		<light directional="true" ambient="0.2 0.2 0.2" diffuse="0.8 0.8 0.8" specular="0.3 0.3 0.3" castshadow="false" pos="0 0 4" dir="0 0 -1" name="light0" />
 
 		<xacro:if value="$(arg use_object)" >
-			<xacro:object_body pos="$(arg mesh_pos)" rot="$(arg mesh_rot)"/>
+			<xacro:object_body pos="$(arg mesh_pos)" rot="$(arg mesh_rot)" theta="$(arg mesh_theta)"/>
 		</xacro:if>
 	</worldbody>
 
