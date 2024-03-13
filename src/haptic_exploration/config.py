@@ -7,7 +7,6 @@ from haptic_exploration import mujoco_config
 
 # GENERAL
 
-MODEL_SAVE_PATH = "../saved_models/"
 WAIT_PLOTS = False
 TRANSLATION_STD_M = 0.002
 ROTATION_STD_DEG = 1.5
@@ -22,15 +21,18 @@ class ObjectSet(Enum):
 
 
 try:
-    base_dir = Path(RosPack().get_path("haptic_exploration"))
+    BASE_DIR = Path(RosPack().get_path("haptic_exploration"))
 except:
-    base_dir = ".."
+    BASE_DIR = Path("..")
 
-object_dir = base_dir / "datasets"
+MODEL_SAVE_PATH = BASE_DIR / "saved_models"
+EXPERIMENTS_DIR = BASE_DIR / "experiments"
+
+OBJECT_DIR = BASE_DIR / "datasets"
 OBJECT_PATHS = {
-    ObjectSet.Basic: object_dir / "basic_61x61",
-    ObjectSet.Composite: object_dir / "composite_61x61",
-    ObjectSet.YCB: object_dir / "ycb_21x16x41"
+    ObjectSet.Basic: OBJECT_DIR / "basic_61x61",
+    ObjectSet.Composite: OBJECT_DIR / "composite_61x61",
+    ObjectSet.YCB: OBJECT_DIR / "ycb_21x16x41"
 }
 
 
