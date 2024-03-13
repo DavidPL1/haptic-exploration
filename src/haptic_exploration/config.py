@@ -33,7 +33,7 @@ OBJECT_DIR = BASE_DIR / "datasets"
 OBJECT_PATHS = {
     ObjectSet.Basic: OBJECT_DIR / "basic_61x61",
     ObjectSet.Composite: OBJECT_DIR / "composite_61x61",
-    ObjectSet.YCB: OBJECT_DIR / "ycb_21x16x41"
+    ObjectSet.YCB: OBJECT_DIR / "ycb_21x16x41",
     ObjectSet.YCB_rot: OBJECT_DIR / "ycb_41_31_rot"
 }
 
