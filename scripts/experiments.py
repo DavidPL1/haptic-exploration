@@ -8,10 +8,13 @@ import numpy as np
 
 from collections import defaultdict
 
+from torch._C._return_types import histogram
+
 from spec import get_trained_ac
-from haptic_exploration.composite import get_feature_position_param, calculate_object_n
+from haptic_exploration.composite import construct_knowledge_table, get_feature_position_param, calculate_object_n
 from haptic_exploration.ml_util import ModelType, load_rl, get_action_param, get_best_checkpoints
 from haptic_exploration.config import ObjectSet, EXPERIMENTS_DIR
+from haptic_exploration import mujoco_config
 
 
 def load_rl_exp(experiment_dir, filename):
@@ -401,6 +404,30 @@ def visualize_composite_objects():
     plot_n_glances_hist(n_glances_list, percent=False, xticks=np.arange(start=min(n_glances_list), stop=max(n_glances_list)+1))
 
 
+def composite_exploration():
+
+    def update_hint(hint, composite_object, feature_index):
+        hint = list(hint)
+        hint[feature_index] = composite_object[feature_index]
+        return tuple(hint)
+
+    table = construct_knowledge_table(mujoco_config.composite_objects)
+    object_features = mujoco_config.composite_objects[1]
+
+    hint = (None, None, None, None)
+    knowledge = table[hint]
+
+    while knowledge.best_max_length > 0:
+        next_index = sorted(knowledge.next_expected_lengths.items(), key=lambda v: v[1])[0][0]
+        print("HINT:", hint)
+        print("BEST FEATURE INDEX:", next_index)
+        knowledge.print_probs()
+
+        hint = update_hint(hint, object_features, next_index)
+        knowledge = table[hint]
+
+
+
 def visualize_training_history():
 
     print("FILE:", EXPERIMENTS_DIR / "epoch_stats.pkl")
@@ -420,5 +447,6 @@ if __name__ == "__main__":
     #basic_2_learn_first_pretrained_training_transformer()
     #basic_2_visualize_glance_parameters()
     #visualize_composite_objects()
+    composite_exploration()
     #composite_visualize_training()
-    visualize_training_history()
+    #visualize_training_history()

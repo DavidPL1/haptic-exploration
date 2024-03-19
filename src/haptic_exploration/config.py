@@ -24,7 +24,7 @@ class ObjectSet(Enum):
 try:
     BASE_DIR = Path(RosPack().get_path("haptic_exploration"))
 except:
-    base_dir = Path("..")
+    BASE_DIR = Path("..")
 
 MODEL_SAVE_PATH = BASE_DIR / "saved_models"
 EXPERIMENTS_DIR = BASE_DIR / "experiments"

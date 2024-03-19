@@ -24,9 +24,10 @@ class Knowledge:
         for position, feature_dict in self.next_dict.items():
             position_best_min_length = min(knowledge.best_min_length for prob, knowledge in feature_dict.values())
             position_best_max_length = max(knowledge.best_max_length for prob, knowledge in feature_dict.values())
-            print(f"POS={position}: E={self.next_expected_lengths[position]:.2f} (MIN={position_best_min_length:.2f}, MAX={position_best_max_length:.2f})")
+            E_K = sum([prob*len(knowledge.remaining_objects) for prob, knowledge in feature_dict.values()])
+            print(f"POS={position}: E[K]={E_K} E[N]={self.next_expected_lengths[position]:.2f} (MIN={position_best_min_length:.2f}, MAX={position_best_max_length:.2f})")
             for feature, (prob, knowledge) in feature_dict.items():
-                print(" " * 3, f"F={feature}: P={prob:.2f} N={len(knowledge.remaining_objects)} E={knowledge.best_expected_length:.2f} (MIN={knowledge.best_min_length:.2f}, MAX={knowledge.best_max_length:.2f})")
+                print(" " * 3, f"F={feature}: P={prob:.2f} K={len(knowledge.remaining_objects)} E[N]={knowledge.best_expected_length:.2f} (MIN={knowledge.best_min_length:.2f}, MAX={knowledge.best_max_length:.2f})")
 
 
 def match_hint(hint, composite_object) -> bool:
