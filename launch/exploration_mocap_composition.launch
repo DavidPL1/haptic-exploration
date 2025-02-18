@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="modelfile"            default="$(find haptic_exploration)/assets/exploration_mocap_composition_world.xml"                     doc="MuJoCo xml file to load. Should define robot model and world." />
+  <arg name="mujoco_plugin_config" default="$(find haptic_exploration)/config/exploration_mocap_mjplugin_config.yaml"             doc="Location of param file containing the mujoco plugin config" />
+  <arg name="realtime" default="1.0" doc="Fraction of desired realtime (0,1]. -1 to run as fast as possible" />
+  <arg name="use_sim_time"         default="true" doc="should mujoco publish its simulation time as ros time?"/>
+
+  <!-- Needed for nesting this launchfile in test launchfiles -->
+  <arg name="headless" default="false" />
+  <arg name="unpause"  default="false" />
+  <arg name="no_x"     default="false" />
+  <arg name="verbose"  default="false" />
+
+  <param name="/use_sim_time" value="true"/>
+
+  <rosparam file="$(arg mujoco_plugin_config)" subst_value="true" />
+
+  <include file="$(find mujoco_ros)/launch/launch_server.launch" pass_all_args="true" >
+    <arg name="console_config_file"  value="$(find mujoco_ros)/config/rosconsole.config" />
+  </include>
+
+</launch>

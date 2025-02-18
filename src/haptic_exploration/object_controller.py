@@ -6,12 +6,11 @@ import os.path as osp
 import tempfile
 import getpass
 import numpy as np
-from typing import Union, List
+from typing import Union, List, Optional
 from copy import deepcopy
-import tf.transformations as tft
 
 import haptic_exploration.mujoco_config as mujoco_config
-from haptic_exploration.config import ObjectSet
+from haptic_exploration.object_sets import ObjectSet
 from haptic_exploration.ros_client import MujocoRosClient
 from haptic_exploration.util import Pose
 
@@ -63,7 +62,7 @@ class CompositeObjectController(BaseObjectController):
         self.composite_objects = composite_objects
         self.current_object_id = None
 
-    def set_object(self, object_id: int, mujoco_client: MujocoRosClient):
+    def set_object(self, object_id: int, mujoco_client: MujocoRosClient, rotation : Optional[float] = None):
         if self.current_object_id != object_id:
             self.clear_object(mujoco_client)
 

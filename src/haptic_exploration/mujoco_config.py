@@ -165,6 +165,8 @@ ycb_objects_custom_meshes = {
 
 ### COMPOSITE SIM CONFIG ###
 
+composite_objects_z_buffer = 0.
+
 composite_active_relative_positions = [
     np.asarray([-0.1, 0.1, 0.0]),
     np.asarray([0.1, 0.1, 0.0]),
@@ -191,3 +193,7 @@ composite_objects = [
     [2, 2, 4, 5],
     [3, 3, 3, 2],
 ]
+
+composite_objects_dict = {
+    i:composite_objects[i] for i in range(len(composite_objects))
+}
