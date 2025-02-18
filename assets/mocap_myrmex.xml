@@ -27,7 +27,7 @@
     </worldbody>
 
     <equality>
-        <weld body1="myrmex_mocap_body" body2="myrmex_body" active="true"/>
+        <weld body1="myrmex_mocap_body" body2="myrmex_body" active="true" torquescale="0.25" />
     </equality>
 
 </mujoco>
