@@ -64,7 +64,7 @@ class MocapGlanceController(MujocoRosClient):
     def clear_object(self):
         self.object_controller.clear_object(self)
 
-    def perform_glance(self, glance_params: GlanceParameters, rt=True):
+    def perform_glance(self, glance_params: GlanceParameters, rt=False):
 
         sim_step_size = 30
         fps_timer = FPSTimer(1000/sim_step_size) if rt else None
